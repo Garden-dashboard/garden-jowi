@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex,nofollow">
+<title>Garden Jowi</title>
+<style>
+:root{
+  --ivory:#fbf8f1;--paper:#fffdfa;--ink:#14263b;--muted:#68758a;
+  --teal:#073d46;--teal2:#0b5962;--gold:#b97821;--gold2:#d4aa53;--gold-soft:#ead8b5;--cyan:#11cfe0;
+  --line:rgba(20,38,59,.105);--good:#2d8b64;--bad:#b25143;
+  --serif:Georgia,'Times New Roman',serif;--sans:Inter,'Segoe UI',Arial,sans-serif;
+  --num:'Segoe UI',Inter,Arial,sans-serif;
+}
+.f input,.item span.pr,.line .sm,.sr b,.sr input,td.num,td input{font-family:var(--num)!important;font-variant-numeric:tabular-nums;letter-spacing:0}
+button:focus{outline:none}
+button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ivory);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.4}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100%}
+
+/* chap panel */
+.nav{width:212px;flex:none;background:var(--teal);color:#fff;padding:22px 14px;display:flex;flex-direction:column}
+.logo{display:block;background:#fbf8f1;border-radius:16px;padding:12px 10px 8px;margin:0 2px 18px;text-align:center}
+.logo img{height:118px;width:auto;display:inline-block}
+.logo small{display:block;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-top:2px}
+.sync{font-size:11px;color:rgba(255,255,255,.45);margin-top:6px}
+.brand{display:flex;align-items:center;margin:0 6px 26px}
+.mark{width:34px;height:34px;border-radius:50%;border:1px solid var(--gold2);position:relative;flex:none;margin-right:11px}
+.mark:after{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan)}
+.brand b{font-family:var(--serif);font-weight:500;font-size:20px;color:var(--gold2);display:block;line-height:1.1}
+.brand small{font-size:9px;letter-spacing:.34em;color:rgba(255,255,255,.5);text-transform:uppercase}
+.nav-group{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.34);margin:16px 10px 6px}
+.nav button{display:block;width:100%;text-align:left;border:0;background:transparent;color:rgba(255,255,255,.6);padding:10px 12px;border-radius:9px;margin-bottom:3px;font-size:14px}
+.nav button:hover{color:#fff}
+.nav button.active{background:rgba(255,255,255,.11);color:#fff}
+.nav button em{float:right;font-style:normal;font-size:12px;color:var(--gold2)}
+.who{margin-top:auto;padding:12px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.55)}
+
+/* ish maydoni */
+.main{flex:1;min-width:0;padding:24px 28px 40px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
+.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:700}
+h1{font-family:var(--serif);font-weight:500;font-size:32px;letter-spacing:-.02em;margin:6px 0 0;line-height:1.1}
+.view{display:none}.view.on{display:block}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px}
+.btn{border:0;border-radius:11px;padding:11px 16px;font-weight:700;background:var(--teal);color:#fff}
+.btn.gold{background:var(--gold2);color:#1a1a1a}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:600}
+.btn.danger{background:transparent;border:1px solid var(--line);color:var(--bad);font-weight:600}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.note{font-size:12px;color:var(--muted)}
+
+/* banket ma'lumoti */
+.form{display:flex;flex-wrap:wrap;margin:0 -6px 14px}
+.f{flex:1 1 150px;margin:0 6px 10px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:9px 12px}
+.f.big{flex:2 1 220px}
+.f label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px}
+.f input,.f select{width:100%;border:0;outline:0;background:transparent;font-size:17px;font-weight:600;padding:0;min-height:26px}
+.f input::placeholder{color:#b9c0ca;font-weight:400}
+.f:focus-within{border-color:var(--gold)}
+
+/* tanlash + hisob */
+.pos{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;min-height:540px}
+.rail{width:136px;flex:none;background:#0a4148;padding:12px 9px}
+.rail button{display:block;width:100%;border:0;border-radius:9px;padding:10px 6px;margin-bottom:6px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.65);font-weight:700;font-size:13px}
+.rail button.active{background:#fff;color:var(--teal)}
+.pick{flex:1;min-width:0;padding:14px}
+.search{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px 13px;background:#fff;outline:0;margin-bottom:9px}
+.search:focus{border-color:var(--gold)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));grid-gap:12px;align-content:start;max-height:720px;overflow:auto;padding:2px}
+.item{margin:0;padding:0;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:left;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.item:hover{border-color:var(--gold);box-shadow:0 8px 22px rgba(20,38,59,.08)}
+.item .ph{display:block;width:100%;height:0;padding-bottom:72%;background:#f3efe5 center/cover no-repeat;position:relative}
+.item .ph.none{background:#f3efe5 url(assets/logo.png) center 30%/auto 70% no-repeat;opacity:.9}
+.item .ph.none:after{content:'';position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(243,239,229,.55)}
+.item .tx{display:block;padding:9px 11px 11px;flex:1}
+.item b{display:block;font-size:13px;font-weight:600;margin-bottom:6px;line-height:1.3}
+.item span.pr{font-size:15px;font-weight:700;color:var(--teal)}
+.item i{position:absolute;right:8px;top:8px;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.25);min-width:22px;height:22px;line-height:22px;border-radius:11px;background:var(--teal);color:#fff;font-style:normal;font-size:11px;font-weight:700;text-align:center;padding:0 5px}
+.ticket{width:372px;flex:none;border-left:1px solid var(--line);padding:16px;display:flex;flex-direction:column}
+.ticket h3{font-family:var(--serif);font-weight:500;font-size:22px;margin:0}
+.ticket .sub{font-size:12px;color:var(--muted);margin-bottom:8px}
+.lines{flex:1;overflow:auto;max-height:380px;min-height:120px}
+.grp{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:10px 0 2px}
+.line{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.line .nm{flex:1;min-width:0;font-size:13px}
+.line .nm small{display:block;color:var(--muted);font-size:11px}
+.line .q{display:flex;align-items:center;margin:0 6px}
+.line .q button{width:26px;height:28px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--teal);font-weight:700;padding:0}
+.line .q input{width:44px;height:28px;border:1px solid var(--line);border-radius:8px;text-align:center;font-weight:700;margin:0 3px;background:#fff;outline:0}
+.line .sm{font-family:var(--serif);font-size:14px;width:86px;text-align:right}
+.empty{color:var(--muted);font-size:13px;padding:28px 0;text-align:center}
+.sums{border-top:1px solid var(--line);margin-top:8px;padding-top:6px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;color:var(--muted)}
+.sr b{font-weight:600;font-size:15px;color:var(--ink)}
+.sr input{width:130px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;text-align:right;background:#fff;outline:0;font-size:15px;font-weight:600;color:var(--ink)}
+.sr input.pc{width:52px;margin-right:4px}
+.sr .srv{display:flex;align-items:center}
+.sr .srv b{min-width:90px;text-align:right}
+.sr.total{padding:10px 0 2px;border-top:1px solid var(--line);margin-top:4px}
+.sr.total b{font-size:26px;font-weight:700}
+.sr.pp b{color:var(--gold);font-size:19px;font-weight:700}
+.acts{display:flex;margin-top:10px}
+.acts .btn{flex:1;padding:13px 8px}
+.acts .btn + .btn{margin-left:8px}
+.msg{font-size:12px;color:var(--good);min-height:18px;margin-top:6px;text-align:center}
+.msg.bad{color:var(--bad)}
+
+/* jadval */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.num,th.num{text-align:right}
+td.num{font-family:var(--serif);font-size:15px;white-space:nowrap}
+td input{width:120px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;text-align:right;background:#fff;outline:0;font-family:var(--serif);font-size:15px}
+tr.off td{opacity:.45}
+.tools{display:flex;flex-wrap:wrap;margin:0 -5px 12px}
+.tools > *{margin:0 5px 8px}
+.tools input,.tools select{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;outline:0}
+.tools .grow{flex:1 1 200px}
+
+#sheet{display:none}
+.sumrow{display:flex;flex-wrap:wrap;margin:0 -6px 8px}
+.sumrow div{flex:1 1 150px;margin:0 6px 8px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:11px 14px}
+.sumrow span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sumrow b{display:block;font-family:var(--num);font-size:20px;font-weight:700;margin-top:3px}
+tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
+.calhead{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.calhead h3{font-family:var(--serif);font-weight:500;font-size:24px;margin:0 12px;min-width:170px;text-align:center}
+.calhead .nav-m{padding:6px 14px;font-size:20px;line-height:1}
+.chips{margin-left:auto;display:flex;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;margin:3px 0 3px 6px;font-weight:600;font-size:13px}
+.chips button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-gap:6px}
+.cal .wd{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700;padding:2px 0 4px}
+.cal .d{min-height:86px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:7px 8px;text-align:left;display:flex;flex-direction:column}
+.cal .d:hover{border-color:var(--gold)}
+.cal .d.out{background:transparent;border-color:transparent;cursor:default}
+.cal .d.past{background:#f6f3ec}
+.cal .d .n{font-weight:700;font-size:14px}
+.cal .d.wk .n{color:var(--bad)}
+.cal .d.today{border:2px solid var(--gold)}
+.cal .d.sel{background:var(--teal);border-color:var(--teal);color:#fff}
+.cal .d .bc{margin-top:auto;font-size:12px;font-weight:700;color:var(--teal)}
+.cal .d .bc span{display:inline-block;background:#e6f1ef;border-radius:999px;padding:2px 8px;margin-bottom:3px}
+.cal .d .bc small{display:block;font-weight:600;color:var(--muted);font-size:11px}
+.cal .d.sel .bc span{background:rgba(255,255,255,.18);color:#fff}
+.cal .d.sel .bc small{color:rgba(255,255,255,.75)}
+.ltitle{font-family:var(--serif);font-weight:500;font-size:22px;margin:4px 0 12px}
+@media (max-width:700px){.cal .d{min-height:54px;padding:5px}.cal .d .bc small{display:none}.cal .d .bc span{padding:1px 5px}.chips{margin:8px 0 0}}
+.paper{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--muted)}
+.paper select{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;outline:0;font-size:12px}
+
+@media (max-width:980px){
+  .app{flex-direction:column}
+  .nav{width:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px}
+  .brand{margin:0 14px 8px 4px}
+  .logo{padding:6px 10px;margin:0 12px 6px 0}
+  .logo img{height:54px}
+  .logo small{display:none}
+  .nav-group,.who{display:none}
+  .nav button{width:auto;margin:0 4px 4px 0}
+  .main{padding:16px 16px 32px}
+  h1{font-size:25px}
+  .pos{flex-direction:column}
+  .rail{width:auto;display:flex;flex-wrap:wrap;padding:10px}
+  .rail button{width:auto;margin:0 6px 6px 0;padding:9px 12px}
+  .ticket{width:auto;border-left:0;border-top:1px solid var(--line)}
+  .items{max-height:420px}
+}
+
+@media print{
+  body{background:#fff}
+  .app{display:none}
+  #sheet{display:block;padding:8mm 4mm;color:#000;font-size:12pt}
+  #sheet h2{font-family:var(--serif);font-weight:500;font-size:24pt;margin:0}
+  #sheet .se{font-size:9pt;letter-spacing:.2em;text-transform:uppercase;color:#8a5a14;font-weight:700}
+  #sheet .info{margin:10pt 0 12pt;border-top:1px solid #999;border-bottom:1px solid #999;padding:8pt 0}
+  #sheet .info div{display:inline-block;width:49%;padding:2pt 0}
+  #sheet .info span{color:#555}
+  #sheet table{width:100%;border-collapse:collapse}
+  #sheet th{font-size:8pt;color:#555;border-bottom:1px solid #999;padding:4pt}
+  #sheet td{padding:4pt;border-bottom:1px solid #ddd;font-size:11pt}
+  #sheet td.g{font-size:8pt;letter-spacing:.16em;text-transform:uppercase;color:#8a5a14;font-weight:700;padding-top:10pt;border-bottom:0}
+  #sheet td.num{font-family:var(--serif);text-align:right;white-space:nowrap}
+  #sheet .tot{margin-top:12pt;margin-left:45%}
+  #sheet .tot div{display:flex;justify-content:space-between;padding:3pt 0}
+  #sheet .tot .big{font-family:var(--num);font-weight:700;font-size:16pt;border-top:1px solid #000;margin-top:4pt;padding-top:6pt}
+  #sheet .sign{margin-top:26pt;display:flex;justify-content:space-between;font-size:10pt;color:#333}
+  /* termal chek (80/58 mm): faqat qora, kulrang yo'q */
+  #sheet.rc{width:72mm;padding:2mm 1.5mm 8mm;font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;line-height:1.3;color:#000;font-weight:700}
+  #sheet.rc *{font-weight:700!important;color:#000!important}
+  #sheet.rc.w58{width:48mm;font-size:8.5pt;padding:1.5mm 1mm 6mm}
+  #sheet.rc .c{text-align:center}
+  #sheet.rc .c img{height:24mm;filter:grayscale(1) contrast(1.6)}
+  #sheet.rc.w58 .c img{height:17mm}
+  #sheet.rc .t{font-weight:700;letter-spacing:.12em;margin:1.5mm 0 2.5mm;font-size:10.5pt}
+  #sheet.rc .kv,#sheet.rc .rw{display:flex;justify-content:space-between;align-items:baseline}
+  #sheet.rc .kv{padding:.4mm 0}
+  #sheet.rc .kv b,#sheet.rc .rw b{text-align:right;margin-left:2mm}
+  #sheet.rc .nt{margin-top:1mm;font-style:italic}
+  #sheet.rc .hr{border-top:1px dashed #000;margin:2mm 0}
+  #sheet.rc .g{font-weight:700;font-size:8.5pt;letter-spacing:.08em;text-transform:uppercase;margin:2.2mm 0 .5mm;border-bottom:1px solid #000}
+  #sheet.rc .it{padding:.7mm 0}
+  #sheet.rc .big{font-size:14pt;padding:1.2mm 0}
+  #sheet.rc .it{border-bottom:1px dotted #000}
+  #sheet.rc .hr{border-top-width:2px}
+  #sheet.rc .sg{margin-top:5mm}
+  #sheet.rc .ft{margin-top:4mm;font-size:8.5pt}
+}
+</style>
+<style id="pgsz">@page{margin:0}</style>
+</head>
+<body>
+<div class="app">
+  <aside class="nav">
+    <div class="logo"><img src="assets/logo.png" alt="Olimp Garden"><small>Banket menyusi</small></div>
+    <div class="nav-group">Banket</div>
+    <button data-view="new" class="active">Yangi banket</button>
+    <button data-view="list">Bronlar <em id="cnt"></em></button>
+    <div class="nav-group">Sozlash</div>
+    <button data-view="menu">Menyu va narxlar</button>
+    <div class="who">Nom va narxlar Garden iiko'dan<div class="sync" id="sync"></div></div>
+  </aside>
+
+  <main class="main">
+    <!-- YANGI BANKET -->
+    <section class="view on" id="v-new">
+      <div class="head">
+        <div><div class="eyebrow">Garden Jowi · banket</div><h1 id="title">Yangi banket</h1></div>
+        <button class="btn ghost" id="clear">Yangi (tozalash)</button>
+      </div>
+      <div class="form">
+        <div class="f big"><label for="b-name">Mehmon ismi</label><input id="b-name" autocomplete="off"></div>
+        <div class="f"><label for="b-phone">Telefon</label><input id="b-phone" autocomplete="off" inputmode="tel"></div>
+        <div class="f"><label for="b-date">Sana</label><input id="b-date" type="date"></div>
+        <div class="f"><label for="b-time">Vaqt</label><input id="b-time" type="time"></div>
+        <div class="f"><label for="b-guests">Mehmonlar soni</label><input id="b-guests" type="number" min="1" inputmode="numeric"></div>
+        <div class="f"><label for="b-hall">Zal</label><select id="b-hall"><option value="">Tanlang</option><option>1-qavat</option><option>2-qavat</option><option>Zal katta</option><option>Qora uy</option><option>Ko'cha katta №1</option><option>Ko'cha katta №2</option><option>Ko'cha oilaviy</option><option>Terra</option><option>Topchan va Supa</option></select></div>
+        <div class="f"><label for="b-manager">Qabul qilgan menejer</label><input id="b-manager" list="mgrs" autocomplete="off"><datalist id="mgrs"></datalist></div>
+        <div class="f big"><label for="b-note">Izoh</label><input id="b-note" autocomplete="off"></div>
+      </div>
+      <div class="pos">
+        <div class="rail" id="cats"></div>
+        <div class="pick">
+          <input class="search" id="q" placeholder="Taom qidirish…" autocomplete="off">
+          <div class="items" id="items"></div>
+        </div>
+        <div class="ticket">
+          <h3>Banket menyusi</h3>
+          <div class="sub" id="tk-sub">Taom tanlang</div>
+          <div class="lines" id="lines"></div>
+          <div class="sums">
+            <div class="sr"><span>Taomlar jami</span><b id="s-sub">0</b></div>
+            <div class="sr"><span>Xizmat haqi</span><span class="srv"><input class="pc" id="b-service" type="number" min="0" max="100" inputmode="numeric" placeholder="0">%<b id="s-srv">0</b></span></div>
+            <div class="sr total"><span>Jami</span><b id="s-total">0</b></div>
+            <div class="sr pp"><span>Kishi boshiga</span><b id="s-pp">—</b></div>
+            <div class="sr"><span>Oldindan to'lov</span><input id="b-deposit" type="number" min="0" inputmode="numeric"></div>
+            <div class="sr"><span>Qoldiq</span><b id="s-rest">0</b></div>
+          </div>
+          <div class="acts"><button class="btn" id="save">Bron qilish</button><button class="btn gold" id="print">Chop etish</button></div>
+          <div class="msg" id="msg"></div>
+          <div class="paper"><label for="paper">Chop etish formati</label><select id="paper"><option value="80">Chek printer · 80 mm</option><option value="58">Chek printer · 58 mm</option><option value="a4">A4 varaq</option></select></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BRONLAR -->
+    <section class="view" id="v-list">
+      <div class="head">
+        <div><div class="eyebrow">Garden Jowi · bronlar</div><h1>Banket bronlari</h1></div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="calhead">
+          <button class="btn ghost nav-m" id="c-prev" aria-label="Oldingi oy">‹</button>
+          <h3 id="c-title"></h3>
+          <button class="btn ghost nav-m" id="c-next" aria-label="Keyingi oy">›</button>
+          <div class="chips" id="chips"><button data-m="today">Bugun</button><button data-m="next">Kelgusi</button><button data-m="month">Butun oy</button><button data-m="all">Hammasi</button></div>
+        </div>
+        <div class="cal" id="cal"></div>
+        <div class="tools" style="margin:12px -5px 0">
+          <select id="l-hall"><option value="">Barcha zallar</option></select>
+          <select id="l-mgr"><option value="">Barcha menejerlar</option></select>
+          <input class="grow" id="l-q" placeholder="Ism yoki telefon…" autocomplete="off">
+          <button class="btn ghost" id="l-reset">Tozalash</button>
+        </div>
+      </div>
+      <h3 class="ltitle" id="l-title"></h3>
+      <div class="sumrow" id="l-sum"></div>
+      <div class="card"><div class="tw" id="list"></div></div>
+    </section>
+
+    <!-- MENYU -->
+    <section class="view" id="v-menu">
+      <div class="head">
+        <div><div class="eyebrow">Garden Jowi · menyu</div><h1>Menyu va narxlar</h1></div>
+        <div class="note">Nom va narx Garden iiko'dan avtomatik keladi. Bu yerda faqat taomni banket ro'yxatidan yashirish yoki qo'shimcha xizmat (masalan dekor) qo'shish mumkin.</div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="tools">
+          <input class="grow" id="a-name" placeholder="Yangi taom nomi" autocomplete="off">
+          <select id="a-cat"></select>
+          <input id="a-price" type="number" min="0" placeholder="Narxi" inputmode="numeric" style="width:140px">
+          <button class="btn" id="a-add">Qo'shish</button>
+        </div>
+        <div class="msg" id="a-msg" style="text-align:left"></div>
+      </div>
+      <div class="card">
+        <div class="tools">
+          <select id="m-cat"></select>
+          <input class="grow" id="m-q" placeholder="Qidirish…" autocomplete="off">
+        </div>
+        <div class="tw" id="mtable"></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="sheet"></div>
+
+<script src="menu-data.js" charset="utf-8"></script>
+<script>
+(function(){
+  function $(id){return document.getElementById(id)}
+  function fmt(n){return String(Math.round(n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')}
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+  function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+  function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+  function num(v){v=parseFloat(v);return isNaN(v)||v<0?0:v}
+
+  var CATS=[['Salat','Salatlar'],['Assorti taomlar','Assorti'],['1-taomlar','1-taomlar'],['2-taomlar','2-taomlar'],
+    ['Shashliklar','Shashlik'],['Балик таомлар','Baliq'],['Сетлар','Setlar'],['Somsa','Somsa'],['Бараклар','Baraklar'],
+    ['Нон чой','Non-choy'],['Mevalar','Mevalar'],['Shirinliklar','Shirinliklar'],['Ichimlik','Ichimliklar'],['Бариста','Barista']];
+  function catLabel(c){for(var i=0;i<CATS.length;i++)if(CATS[i][0]===c)return CATS[i][1];return c}
+  function catOrder(c){for(var i=0;i<CATS.length;i++)if(CATS[i][0]===c)return i;return 99}
+
+  /* --- menyu: asos (menu-data.js) + menejer o'zgartirishlari --- */
+  var BASE=window.GJ_MENU||[], ov=load('gj_menu',{edits:{},added:[]}), MENU=[];
+  function buildMenu(){
+    var i,b,e;MENU=[];
+    /* iiko taomlarining nomi va narxi faqat iiko'dan — bu yerda o'zgartirilmaydi */
+    for(i=0;i<BASE.length;i++){b=BASE[i];e=ov.edits[b[0]]||{};MENU.push({id:b[0],n:String(b[1]).replace(/[\s.]+$/,''),p:b[2],c:b[3],img:b[4]||'',hide:!!e.hide})}
+    for(i=0;i<ov.added.length;i++){b=ov.added[i];e=ov.edits[b.id]||{};MENU.push({id:b.id,n:b.n,p:b.p,c:b.c,img:'',hide:!!e.hide,own:true})}
+    MENU.sort(function(x,y){return (x.img?0:1)-(y.img?0:1)||(x.n<y.n?-1:x.n>y.n?1:0)}); /* suratlilar oldinda */
+  }
+
+  /* --- joriy banket --- */
+  var FIELDS=['name','phone','date','time','guests','hall','manager','note','service','deposit'];
+  var cur, bron=load('gj_bron',[]), cat=CATS[0][0];
+  function blank(){return {id:null,name:'',phone:'',date:'',time:'',guests:'',hall:'',manager:load('gj_mgr',''),note:'',service:load('gj_service','')||'',deposit:'',lines:[]}}
+  function fill(){
+    var hs=$('b-hall'),i,ok=false;
+    for(i=0;i<hs.options.length;i++)if(hs.options[i].value===cur.hall)ok=true;
+    if(!ok&&cur.hall){var o=document.createElement('option');o.value=o.text=cur.hall;hs.appendChild(o)} /* eski bronda qo'lda yozilgan zal */
+    for(i=0;i<FIELDS.length;i++)$('b-'+FIELDS[i]).value=cur[FIELDS[i]]==null?'':cur[FIELDS[i]];
+  }
+  function managers(){
+    var seen={},a=[],i,m;
+    for(i=0;i<bron.length;i++){m=String(bron[i].manager||'').replace(/^\s+|\s+$/g,'');if(m&&!seen[m.toLowerCase()]){seen[m.toLowerCase()]=1;a.push(m)}}
+    return a.sort();
+  }
+  function drawManagers(){
+    var a=managers(),h='',i,s=$('l-mgr'),keep=s.value;
+    for(i=0;i<a.length;i++)h+='<option value="'+esc(a[i])+'">';
+    $('mgrs').innerHTML=h;
+    h='<option value="">Barcha menejerlar</option>';
+    for(i=0;i<a.length;i++)h+='<option>'+esc(a[i])+'</option>';
+    s.innerHTML=h;s.value=keep;
+  }
+  function read(){for(var i=0;i<FIELDS.length;i++)cur[FIELDS[i]]=$('b-'+FIELDS[i]).value}
+  function calc(){
+    var s=0,i;for(i=0;i<cur.lines.length;i++)s+=cur.lines[i].p*cur.lines[i].q;
+    var srv=Math.round(s*num(cur.service)/100),t=s+srv,g=num(cur.guests),d=num(cur.deposit);
+    return {sub:s,srv:srv,total:t,pp:g?t/g:0,dep:d,rest:t-d};
+  }
+  function qtyOf(id){for(var i=0;i<cur.lines.length;i++)if(cur.lines[i].id===id)return cur.lines[i].q;return 0}
+
+  /* --- bo'limlar --- */
+  var navBtns=document.querySelectorAll('.nav button[data-view]');
+  function show(v){
+    var i,views=document.querySelectorAll('.view');
+    for(i=0;i<views.length;i++)views[i].className='view'+(views[i].id==='v-'+v?' on':'');
+    for(i=0;i<navBtns.length;i++)navBtns[i].className=navBtns[i].getAttribute('data-view')===v?'active':'';
+    if(v==='list')drawList();
+    if(v==='menu')drawMenuTable();
+    if(v==='new'){drawItems()}
+  }
+  for(var i=0;i<navBtns.length;i++)navBtns[i].onclick=function(){show(this.getAttribute('data-view'))};
+
+  /* --- taom tanlash --- */
+  function drawCats(){
+    var h='',i,used={};
+    for(i=0;i<MENU.length;i++)if(!MENU[i].hide)used[MENU[i].c]=1;
+    for(i=0;i<CATS.length;i++)if(used[CATS[i][0]])h+='<button'+(CATS[i][0]===cat?' class="active"':'')+' data-c="'+esc(CATS[i][0])+'">'+esc(CATS[i][1])+'</button>';
+    $('cats').innerHTML=h;
+    var bs=$('cats').getElementsByTagName('button');
+    for(i=0;i<bs.length;i++)bs[i].onclick=function(){cat=this.getAttribute('data-c');$('q').value='';drawCats();drawItems()};
+  }
+  function drawItems(){
+    var h='',q=$('q').value.toLowerCase().replace(/^\s+|\s+$/g,''),i,m,k;
+    for(i=0;i<MENU.length;i++){
+      m=MENU[i];if(m.hide)continue;
+      if(q?m.n.toLowerCase().indexOf(q)<0:m.c!==cat)continue;
+      k=qtyOf(m.id);
+      h+='<button class="item" data-id="'+esc(m.id)+'">'+(m.img?'<span class="ph" style="background-image:url(\''+esc(m.img)+'\')"></span>':'<span class="ph none"></span>')+'<span class="tx"><b>'+esc(m.n)+'</b><span class="pr">'+fmt(m.p)+'</span></span>'+(k?'<i>'+k+'</i>':'')+'</button>';
+    }
+    $('items').innerHTML=h||'<div class="empty" style="width:100%">Topilmadi</div>';
+    var bs=$('items').getElementsByTagName('button');
+    for(i=0;i<bs.length;i++)bs[i].onclick=function(){add(this.getAttribute('data-id'))};
+  }
+  function add(id){
+    var i,m;
+    for(i=0;i<cur.lines.length;i++)if(cur.lines[i].id===id){cur.lines[i].q++;drawOrder();drawItems();return}
+    for(i=0;i<MENU.length;i++)if(MENU[i].id===id)m=MENU[i];
+    if(!m)return;
+    cur.lines.push({id:m.id,n:m.n,p:m.p,c:m.c,q:1});drawOrder();drawItems();
+  }
+  $('q').oninput=drawItems;
+
+  /* --- hisob --- */
+  function sorted(){
+    var a=cur.lines.slice();
+    a.sort(function(x,y){return catOrder(x.c)-catOrder(y.c)});
+    return a;
+  }
+  function drawOrder(){
+    var h='',a=sorted(),i,l,last=null,pos=0;
+    for(i=0;i<a.length;i++){
+      l=a[i];pos+=l.q;
+      if(l.c!==last){h+='<div class="grp">'+esc(catLabel(l.c))+'</div>';last=l.c}
+      h+='<div class="line"><div class="nm">'+esc(l.n)+'<small>'+fmt(l.p)+'</small></div><div class="q"><button data-id="'+esc(l.id)+'" data-d="-1">−</button><input type="number" min="0" inputmode="numeric" data-id="'+esc(l.id)+'" value="'+l.q+'"><button data-id="'+esc(l.id)+'" data-d="1">+</button></div><div class="sm">'+fmt(l.p*l.q)+'</div></div>';
+    }
+    $('lines').innerHTML=h||'<div class="empty">Chapdan taom tanlang</div>';
+    $('tk-sub').innerHTML=a.length?a.length+' xil taom · '+fmt(pos)+' porsiya':'Taom tanlang';
+    var bs=$('lines').getElementsByTagName('button');
+    for(i=0;i<bs.length;i++)bs[i].onclick=function(){setQty(this.getAttribute('data-id'),qtyOf(this.getAttribute('data-id'))+ +this.getAttribute('data-d'))};
+    var ins=$('lines').getElementsByTagName('input');
+    for(i=0;i<ins.length;i++)ins[i].onchange=function(){setQty(this.getAttribute('data-id'),Math.round(num(this.value)))};
+    drawSums();
+  }
+  function setQty(id,q){
+    for(var i=0;i<cur.lines.length;i++)if(cur.lines[i].id===id){
+      if(q<1)cur.lines.splice(i,1);else cur.lines[i].q=q;break;
+    }
+    drawOrder();drawItems();
+  }
+  function drawSums(){
+    read();var c=calc();
+    $('s-sub').innerHTML=fmt(c.sub);$('s-srv').innerHTML=fmt(c.srv);$('s-total').innerHTML=fmt(c.total);
+    $('s-pp').innerHTML=c.pp?fmt(c.pp):'—';$('s-rest').innerHTML=fmt(c.rest);
+    $('title').innerHTML=cur.id?'Banket: '+esc(cur.name||'nomsiz'):'Yangi banket';
+  }
+  for(var f=0;f<FIELDS.length;f++)$('b-'+FIELDS[f]).oninput=$('b-'+FIELDS[f]).onchange=function(){drawSums();say('')};
+
+  function say(t,bad){$('msg').innerHTML=t;$('msg').className='msg'+(bad?' bad':'')}
+  function check(){
+    read();
+    if(!cur.name.replace(/\s/g,''))return 'Mehmon ismini yozing';
+    if(!cur.date)return 'Sanani tanlang';
+    if(!num(cur.guests))return 'Mehmonlar sonini yozing';
+    if(!String(cur.manager||'').replace(/\s/g,''))return 'Bronni qabul qilgan menejer ismini yozing';
+    if(!cur.lines.length)return 'Kamida bitta taom tanlang';
+    return '';
+  }
+  $('save').onclick=function(){
+    var e=check(),i,found=false;if(e)return say(e,true);
+    store('gj_service',num(cur.service));
+    cur.manager=String(cur.manager).replace(/^\s+|\s+$/g,'');store('gj_mgr',cur.manager);
+    if(!cur.id)cur.id='b'+(new Date().getTime());
+    cur.saved=new Date().getTime();
+    var copy=JSON.parse(JSON.stringify(cur));
+    for(i=0;i<bron.length;i++)if(bron[i].id===cur.id){bron[i]=copy;found=true}
+    if(!found)bron.push(copy);
+    if(!store('gj_bron',bron))return say('Saqlab bo\'lmadi — brauzer xotirasi yopiq',true);
+    drawCount();drawManagers();drawSums();say('Bron saqlandi');
+  };
+  $('print').onclick=function(){
+    read();if(!cur.lines.length)return say('Kamida bitta taom tanlang',true);
+    drawSheet();window.print();
+  };
+  $('clear').onclick=function(){cur=blank();fill();say('');drawOrder();drawItems()};
+
+  /* --- chop etiladigan varaq --- */
+  function drawSheet(){
+    var p=$('paper').value;
+    $('pgsz').innerHTML=p==='a4'?'@page{size:A4;margin:12mm}':'@page{margin:0}';
+    if(p==='a4')return drawSheetA4();
+    var c=calc(),a=sorted(),i,l,last=null,h='';
+    function kv(k,v){return v?'<div class="kv"><span>'+k+'</span><b>'+esc(v)+'</b></div>':''}
+    h+='<div class="c"><img src="assets/logo.png" alt=""><div class="t">BANKET MENYUSI</div></div>';
+    h+=kv('Mehmon',cur.name)+kv('Telefon',cur.phone)+kv('Sana',dmy(cur.date)+(cur.time?' '+cur.time:''))+kv('Mehmonlar',cur.guests+' kishi')+kv('Zal',cur.hall)+kv('Qabul qildi',cur.manager);
+    if(cur.note)h+='<div class="nt">'+esc(cur.note)+'</div>';
+    h+='<div class="hr"></div>';
+    for(i=0;i<a.length;i++){
+      l=a[i];
+      if(l.c!==last){h+='<div class="g">'+esc(catLabel(l.c))+'</div>';last=l.c}
+      h+='<div class="it"><div>'+esc(l.n)+'</div><div class="rw"><span>'+l.q+' x '+fmt(l.p)+'</span><b>'+fmt(l.p*l.q)+'</b></div></div>';
+    }
+    h+='<div class="hr"></div>'+kv('Taomlar jami',fmt(c.sub));
+    if(c.srv)h+=kv('Xizmat haqi '+num(cur.service)+'%',fmt(c.srv));
+    h+='<div class="kv big"><span>JAMI</span><b>'+fmt(c.total)+'</b></div>';
+    if(c.pp)h+=kv('Kishi boshiga',fmt(c.pp));
+    if(c.dep)h+=kv('Oldindan to\'lov',fmt(c.dep))+kv('Qoldiq',fmt(c.rest));
+    h+='<div class="hr"></div><div class="c ft">Olimp Garden · rahmat!</div>';
+    $('sheet').className='rc'+(p==='58'?' w58':'');
+    $('sheet').innerHTML=h;
+  }
+  function drawSheetA4(){
+    var c=calc(),a=sorted(),i,l,last=null,h='';
+    $('sheet').className='';
+    h+='<div style="display:flex;align-items:center;justify-content:space-between"><div><div class="se">Olimp Garden</div><h2>Banket menyusi</h2></div><img src="assets/logo.png" alt="" style="height:90px"></div><div class="info">';
+    h+='<div><span>Mehmon: </span>'+esc(cur.name)+'</div><div><span>Telefon: </span>'+esc(cur.phone)+'</div>';
+    h+='<div><span>Sana: </span>'+esc(dmy(cur.date))+(cur.time?' · '+esc(cur.time):'')+'</div><div><span>Mehmonlar soni: </span>'+esc(cur.guests)+'</div>';
+    if(cur.hall)h+='<div><span>Zal: </span>'+esc(cur.hall)+'</div>';
+    if(cur.manager)h+='<div><span>Qabul qildi: </span>'+esc(cur.manager)+'</div>';
+    if(cur.note)h+='<div><span>Izoh: </span>'+esc(cur.note)+'</div>';
+    h+='</div><table><tr><th style="text-align:left">Taom</th><th class="num">Narxi</th><th class="num">Soni</th><th class="num">Summa</th></tr>';
+    for(i=0;i<a.length;i++){
+      l=a[i];
+      if(l.c!==last){h+='<tr><td class="g" colspan="4">'+esc(catLabel(l.c))+'</td></tr>';last=l.c}
+      h+='<tr><td>'+esc(l.n)+'</td><td class="num">'+fmt(l.p)+'</td><td class="num">'+l.q+'</td><td class="num">'+fmt(l.p*l.q)+'</td></tr>';
+    }
+    h+='</table><div class="tot"><div><span>Taomlar jami</span><span>'+fmt(c.sub)+' so\'m</span></div>';
+    if(c.srv)h+='<div><span>Xizmat haqi '+num(cur.service)+'%</span><span>'+fmt(c.srv)+' so\'m</span></div>';
+    h+='<div class="big"><span>Jami</span><span>'+fmt(c.total)+' so\'m</span></div>';
+    if(c.pp)h+='<div><span>Kishi boshiga</span><span>'+fmt(c.pp)+' so\'m</span></div>';
+    if(c.dep)h+='<div><span>Oldindan to\'lov</span><span>'+fmt(c.dep)+' so\'m</span></div><div><span>Qoldiq</span><span>'+fmt(c.rest)+' so\'m</span></div>';
+    h+='</div>';
+    $('sheet').innerHTML=h;
+  }
+  function dmy(d){var p=String(d||'').split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:d}
+
+  /* --- bronlar ro'yxati --- */
+  function drawCount(){$('cnt').innerHTML=bron.length||''}
+  function iso(d){function p(n){return (n<10?'0':'')+n}return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
+  function addDays(d,n){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()+n);return x}
+  /* kalendar: mode = day | month | next | all */
+  var MONTHS=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+  var calM=new Date(new Date().getFullYear(),new Date().getMonth(),1),mode='next',selDay=null;
+  function monthRange(){return [iso(calM),iso(new Date(calM.getFullYear(),calM.getMonth()+1,0))]}
+  function period(){
+    var t=iso(new Date());
+    if(mode==='day')return [selDay,selDay];
+    if(mode==='month')return monthRange();
+    if(mode==='next')return [t,'9999'];
+    return ['','9999'];
+  }
+  function dayTitle(d){var p=d.split('-');return (+p[2])+'-'+MONTHS[+p[1]-1].toLowerCase()+', '+p[0]}
+  function passHQ(b){
+    var hall=$('l-hall').value,q=$('l-q').value.toLowerCase().replace(/\s+/g,'');
+    if(hall&&b.hall!==hall)return false;
+    var mg=$('l-mgr').value;
+    if(mg&&String(b.manager||'').replace(/^\s+|\s+$/g,'').toLowerCase()!==mg.toLowerCase())return false;
+    if(q&&(String(b.name)+String(b.phone)).toLowerCase().replace(/\s+/g,'').indexOf(q)<0)return false;
+    return true;
+  }
+  function drawCal(){
+    var by={},i,b,k,keep=cur;
+    for(i=0;i<bron.length;i++){
+      b=bron[i];if(!passHQ(b))continue;
+      if(!by[b.date])by[b.date]={n:0,g:0};
+      by[b.date].n++;by[b.date].g+=num(b.guests);
+    }
+    cur=keep;
+    $('c-title').innerHTML=MONTHS[calM.getMonth()]+' '+calM.getFullYear();
+    var h='',wd=['Du','Se','Ch','Pa','Ju','Sh','Ya'],t=iso(new Date());
+    for(i=0;i<7;i++)h+='<div class="wd">'+wd[i]+'</div>';
+    var lead=(calM.getDay()+6)%7,days=new Date(calM.getFullYear(),calM.getMonth()+1,0).getDate();
+    for(i=0;i<lead;i++)h+='<div class="d out"></div>';
+    for(i=1;i<=days;i++){
+      k=iso(new Date(calM.getFullYear(),calM.getMonth(),i));
+      var x=by[k],dow=(lead+i-1)%7;
+      h+='<button class="d'+(k<t?' past':'')+(k===t?' today':'')+(dow===6?' wk':'')+(mode==='day'&&k===selDay?' sel':'')+'" data-d="'+k+'"><span class="n">'+i+'</span>'+(x?'<span class="bc"><span>'+x.n+' bron</span><small>'+fmt(x.g)+' kishi</small></span>':'')+'</button>';
+    }
+    $('cal').innerHTML=h;
+    var bs=$('cal').getElementsByTagName('button');
+    for(i=0;i<bs.length;i++)bs[i].onclick=function(){
+      var d=this.getAttribute('data-d');
+      if(mode==='day'&&selDay===d){mode='month';selDay=null}else{mode='day';selDay=d}
+      drawList();
+    };
+    var cs=$('chips').getElementsByTagName('button');
+    for(i=0;i<cs.length;i++)cs[i].className=(cs[i].getAttribute('data-m')===mode||(mode==='day'&&selDay===t&&cs[i].getAttribute('data-m')==='today'))?'on':'';
+  }
+  function hallFilterOptions(){
+    var s=$('l-hall'),keep=s.value,seen={},h='<option value="">Barcha zallar</option>',i,o=$('b-hall').options,v;
+    for(i=0;i<o.length;i++){v=o[i].value;if(v&&!seen[v]){seen[v]=1;h+='<option>'+esc(v)+'</option>'}}
+    for(i=0;i<bron.length;i++){v=bron[i].hall;if(v&&!seen[v]){seen[v]=1;h+='<option>'+esc(v)+'</option>'}}
+    s.innerHTML=h;s.value=keep;
+  }
+  function drawList(){
+    hallFilterOptions();drawCal();
+    var r=period(),today=iso(new Date());
+    var a=[],h,i,b,c,keep=cur,sg=0,st=0,sd=0,sr=0;
+    for(i=0;i<bron.length;i++){
+      b=bron[i];
+      if(b.date<r[0]||b.date>r[1]||!passHQ(b))continue;
+      a.push(b);
+    }
+    a.sort(function(x,y){return (x.date+x.time)<(y.date+y.time)?-1:1});
+    $('l-title').innerHTML=mode==='day'?esc(dayTitle(selDay))+' bronlari':mode==='month'?MONTHS[calM.getMonth()]+' '+calM.getFullYear()+' bronlari':mode==='next'?'Kelgusi bronlar (bugundan)':'Barcha bronlar';
+    if(!bron.length){$('l-sum').innerHTML='';$('list').innerHTML='<div class="empty">Hali bron yo\'q. "Yangi banket" bo\'limida menyu tuzib, "Bron qilish"ni bosing.</div>';return}
+    for(i=0;i<a.length;i++){cur=a[i];c=calc();sg+=num(a[i].guests);st+=c.total;sd+=c.dep;sr+=c.rest}
+    cur=keep;
+    $('l-sum').innerHTML='<div><span>Bronlar</span><b>'+a.length+'</b></div><div><span>Mehmonlar</span><b>'+fmt(sg)+'</b></div><div><span>Jami summa</span><b>'+fmt(st)+'</b></div><div><span>Oldindan to\'lov</span><b>'+fmt(sd)+'</b></div><div><span>Qoldiq</span><b>'+fmt(sr)+'</b></div>';
+    if(!a.length){$('list').innerHTML='<div class="empty">Bu filtr bo\'yicha bron topilmadi</div>';return}
+    h='<table><tr><th>Sana</th><th>Mehmon</th><th>Telefon</th><th>Zal</th><th>Qabul qildi</th><th class="num">Kishi</th><th class="num">Jami</th><th class="num">Kishi boshiga</th><th class="num">Oldindan</th><th class="num">Qoldiq</th><th></th></tr>';
+    for(i=0;i<a.length;i++){
+      b=a[i];cur=b;c=calc();
+      h+='<tr'+(b.date===today?' class="today" title="Bugun"':'')+'><td>'+esc(dmy(b.date))+(b.time?'<br><span class="note">'+esc(b.time)+'</span>':'')+'</td><td><b>'+esc(b.name)+'</b>'+(b.note?'<br><span class="note">'+esc(b.note)+'</span>':'')+'</td><td>'+esc(b.phone)+'</td><td>'+esc(b.hall)+'</td><td>'+(b.manager?esc(b.manager):'<span class="note">—</span>')+'</td><td class="num">'+esc(b.guests)+'</td><td class="num">'+fmt(c.total)+'</td><td class="num">'+(c.pp?fmt(c.pp):'—')+'</td><td class="num">'+fmt(c.dep)+'</td><td class="num">'+fmt(c.rest)+'</td><td style="white-space:nowrap"><button class="btn ghost" data-open="'+esc(b.id)+'">Ochish</button> <button class="btn danger" data-del="'+esc(b.id)+'">O\'chirish</button></td></tr>';
+    }
+    cur=keep;
+    $('list').innerHTML=h+'</table>';
+    var bs=$('list').getElementsByTagName('button');
+    for(i=0;i<bs.length;i++)bs[i].onclick=listClick;
+  }
+  function listClick(){
+    var id=this.getAttribute('data-open'),del=this.getAttribute('data-del'),i;
+    if(id){
+      for(i=0;i<bron.length;i++)if(bron[i].id===id)cur=JSON.parse(JSON.stringify(bron[i]));
+      fill();say('');drawOrder();show('new');return;
+    }
+    if(this.getAttribute('data-sure')){
+      for(i=bron.length-1;i>=0;i--)if(bron[i].id===del)bron.splice(i,1);
+      store('gj_bron',bron);if(cur.id===del)cur.id=null;drawCount();drawList();drawSums();return;
+    }
+    this.setAttribute('data-sure','1');this.innerHTML='Aniq o\'chirilsinmi?';
+  }
+
+  /* --- menyu va narxlar --- */
+  function catOptions(sel){var h='',i;for(i=0;i<CATS.length;i++)h+='<option value="'+esc(CATS[i][0])+'"'+(CATS[i][0]===sel?' selected':'')+'>'+esc(CATS[i][1])+'</option>';return h}
+  $('a-cat').innerHTML=catOptions(CATS[0][0]);
+  $('m-cat').innerHTML=catOptions(CATS[0][0]);
+  $('m-cat').onchange=drawMenuTable;$('m-q').oninput=drawMenuTable;
+  function drawMenuTable(){
+    var c=$('m-cat').value,q=$('m-q').value.toLowerCase().replace(/^\s+|\s+$/g,''),h,i,m,n=0;
+    h='<table><tr><th>Taom</th><th>Kategoriya</th><th class="num">Narxi, so\'m</th><th></th></tr>';
+    for(i=0;i<MENU.length;i++){
+      m=MENU[i];
+      if(q?m.n.toLowerCase().indexOf(q)<0:m.c!==c)continue;n++;
+      h+='<tr'+(m.hide?' class="off"':'')+'><td>'+esc(m.n)+(m.own?' <span class="note">(qo\'shilgan)</span>':'')+'</td><td class="note">'+esc(catLabel(m.c))+'</td><td class="num">'+fmt(m.p)+'</td><td><button class="btn ghost" data-id="'+esc(m.id)+'">'+(m.hide?'Ko\'rsatish':'Yashirish')+'</button></td></tr>';
+    }
+    $('mtable').innerHTML=n?h+'</table>':'<div class="empty">Topilmadi</div>';
+    var bs=$('mtable').getElementsByTagName('button');
+    for(i=0;i<bs.length;i++)bs[i].onclick=function(){var id=this.getAttribute('data-id');edit(id,'hide',!(ov.edits[id]||{}).hide);drawMenuTable()};
+  }
+  function edit(id,k,v){
+    if(!ov.edits[id])ov.edits[id]={};
+    ov.edits[id][k]=v;store('gj_menu',ov);buildMenu();drawCats();
+  }
+  $('a-add').onclick=function(){
+    var n=$('a-name').value.replace(/^\s+|\s+$/g,''),p=Math.round(num($('a-price').value)),m=$('a-msg');
+    if(!n||!p){m.className='msg bad';m.innerHTML='Nomi va narxini yozing';return}
+    ov.added.push({id:'x'+(new Date().getTime()),n:n,p:p,c:$('a-cat').value});
+    store('gj_menu',ov);buildMenu();drawCats();
+    $('m-cat').value=$('a-cat').value;$('m-q').value='';drawMenuTable();
+    $('a-name').value='';$('a-price').value='';m.className='msg';m.innerHTML='Qo\'shildi: '+esc(n);
+  };
+
+  $('l-hall').onchange=$('l-mgr').onchange=drawList;
+  drawManagers();
+  $('l-q').oninput=drawList;
+  $('c-prev').onclick=function(){calM=new Date(calM.getFullYear(),calM.getMonth()-1,1);mode='month';selDay=null;drawList()};
+  $('c-next').onclick=function(){calM=new Date(calM.getFullYear(),calM.getMonth()+1,1);mode='month';selDay=null;drawList()};
+  (function(){var cs=$('chips').getElementsByTagName('button');for(var j=0;j<cs.length;j++)cs[j].onclick=function(){
+    var m=this.getAttribute('data-m'),n=new Date();
+    if(m==='today'){calM=new Date(n.getFullYear(),n.getMonth(),1);mode='day';selDay=iso(n)}
+    else{mode=m;selDay=null}
+    drawList();
+  }})();
+  $('l-reset').onclick=function(){var n=new Date();calM=new Date(n.getFullYear(),n.getMonth(),1);mode='next';selDay=null;$('l-hall').value='';$('l-mgr').value='';$('l-q').value='';drawList()};
+  $('paper').value=load('gj_paper','80');
+  $('paper').onchange=function(){store('gj_paper',this.value)};
+  $('sync').innerHTML=window.GJ_SYNC?'Oxirgi yangilanish: '+esc(window.GJ_SYNC):'';
+  buildMenu();cur=blank();fill();drawCats();drawItems();drawOrder();drawCount();
+  if(location.hash){var hv=location.hash.slice(1);if($('v-'+hv))show(hv)}
+})();
+</script>
+</body>
+</html>
