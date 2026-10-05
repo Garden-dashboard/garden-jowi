@@ -132,6 +132,22 @@ tr.off td{opacity:.45}
 .sumrow span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .sumrow b{display:block;font-family:var(--num);font-size:20px;font-weight:700;margin-top:3px}
 tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
+.login{position:fixed;left:0;top:0;right:0;bottom:0;z-index:100;background:var(--teal);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.login[hidden]{display:none}
+.lg{width:100%;max-width:340px;background:var(--ivory);border-radius:22px;padding:26px 26px 20px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.lg img{height:120px}
+.lg h2{font-family:var(--serif);font-weight:500;font-size:28px;margin:4px 0 14px}
+.lg label{display:block;text-align:left;font-size:12px;color:var(--muted);margin:10px 2px 4px}
+.lg input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;outline:0;font-size:16px;font-weight:600}
+.lg input:focus{border-color:var(--gold)}
+.lg .btn{width:100%;margin-top:16px;padding:13px}
+.user{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.user b{color:#fff;font-size:14px}
+.nav .user button{display:inline-block;width:auto;margin:0;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.75);border-radius:8px;padding:4px 10px;font-size:12px}
+.nav .user button:hover{color:#fff;border-color:rgba(255,255,255,.5)}
+.ltitle .note{font-family:var(--sans);font-size:13px;margin-left:8px}
+.badtxt{color:var(--bad)!important}
+@media print{.login{display:none!important}}
 .calwrap{position:relative}
 .datebtn{display:inline-flex;align-items:center;padding:10px 14px}
 .datebtn svg{margin-right:8px;color:var(--gold)}
@@ -231,7 +247,7 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
     <button data-view="list">Bronlar <em id="cnt"></em></button>
     <div class="nav-group">Sozlash</div>
     <button data-view="menu">Menyu va narxlar</button>
-    <div class="who">Nom va narxlar Garden iiko'dan<div class="sync" id="sync"></div></div>
+    <div class="who"><div class="user"><b id="me"></b><button id="out">Chiqish</button></div>Nom va narxlar Garden iiko'dan<div class="sync" id="sync"></div></div>
   </aside>
 
   <main class="main">
@@ -297,7 +313,7 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
           <button class="btn ghost" id="l-reset">Tozalash</button>
         </div>
       </div>
-      <h3 class="ltitle" id="l-title"></h3>
+      <h3 class="ltitle"><span id="l-title"></span> <span class="note" id="net"></span></h3>
       <div class="sumrow" id="l-sum"></div>
       <div class="card"><div class="tw" id="list"></div></div>
     </section>
@@ -326,6 +342,17 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
       </div>
     </section>
   </main>
+</div>
+<div class="login" id="login" hidden>
+  <form class="lg" id="lg-form" autocomplete="on">
+    <img src="assets/logo.png" alt="Olimp Garden">
+    <div class="eyebrow">Garden Jowi · banket</div>
+    <h2>Kirish</h2>
+    <label for="lg-user">Login</label><input id="lg-user" name="username" autocomplete="username" autocapitalize="off" spellcheck="false">
+    <label for="lg-pass">Parol</label><input id="lg-pass" name="password" type="password" autocomplete="current-password" inputmode="numeric">
+    <button class="btn" id="lg-go" type="submit">Kirish</button>
+    <div class="msg bad" id="lg-msg"></div>
+  </form>
 </div>
 <div id="sheet"></div>
 
@@ -357,8 +384,60 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
 
   /* --- joriy banket --- */
   var FIELDS=['name','phone','date','time','guests','hall','manager','note','service','deposit'];
-  var cur, bron=load('gj_bron',[]), cat=CATS[0][0];
-  function blank(){return {id:null,name:'',phone:'',date:'',time:'',guests:'',hall:'',manager:load('gj_mgr',''),note:'',service:load('gj_service','')||'',deposit:'',lines:[]}}
+  var cur, bron=[], cat=CATS[0][0];
+
+  /* --- umumiy ombor (Cloudflare Worker + D1): bronlar shu yerda, brauzerda emas --- */
+  var API='https://garden-jowi.olimpzagotovka.workers.dev', token=load('gj_token',''), me=load('gj_login','');
+  function api(method,path,body,cb){
+    var x=new XMLHttpRequest();
+    x.open(method,API+path,true);
+    x.setRequestHeader('Content-Type','application/json');
+    if(token)x.setRequestHeader('Authorization','Bearer '+token);
+    x.timeout=20000;
+    x.onreadystatechange=function(){
+      if(x.readyState!==4)return;
+      var r=null;try{r=JSON.parse(x.responseText)}catch(e){}
+      if(x.status===401&&path!=='/login'){logout('Qayta kiring');return cb('Qayta kirish kerak',null)}
+      if(x.status>=200&&x.status<300&&r&&r.ok)return cb(null,r);
+      cb(r&&r.error?r.error:(x.status?'Server xatosi ('+x.status+')':'Internet yo\'q, serverga ulanib bo\'lmadi'),null);
+    };
+    x.send(body?JSON.stringify(body):null);
+  }
+  function net(t,bad){var n=$('net');n.innerHTML=t||'';n.className='note'+(bad?' badtxt':'')}
+  function loadBron(cb){
+    net('Yuklanmoqda…');
+    api('GET','/bron',null,function(err,r){
+      if(err){net(err,true);return cb&&cb(err)}
+      bron=r.bron||[];
+      migrate(function(e2){
+        net(e2?'Eski bronlarni ko\'chirishda xato: '+e2:'',!!e2);
+        drawCount();drawManagers();if(cb)cb(null);
+      });
+    });
+  }
+  /* shu brauzerda ilgari saqlangan bronlarni bir marta umumiy omborga ko'chiradi */
+  function migrate(done){
+    var local=load('gj_bron',[]),ids={},todo=[],i;
+    for(i=0;i<bron.length;i++)ids[bron[i].id]=1;
+    for(i=0;i<local.length;i++)if(local[i]&&local[i].id&&local[i].lines&&!ids[local[i].id])todo.push(local[i]);
+    if(!local.length)return done();
+    (function next(){
+      if(!todo.length){store('gj_bron_backup',local);store('gj_bron',[]);return done()}
+      var b=todo.shift();
+      api('PUT','/bron/'+encodeURIComponent(b.id),b,function(err){
+        if(err)return done(err); /* lokal nusxa joyida qoladi, keyingi safar qayta uriniladi */
+        bron.push(b);next();
+      });
+    })();
+  }
+  function showLogin(msg){
+    $('login').hidden=false;$('lg-msg').innerHTML=msg||'';
+    $('lg-user').value=me||'';
+    setTimeout(function(){(me?$('lg-pass'):$('lg-user')).focus()},50);
+  }
+  function logout(msg){token='';store('gj_token','');bron=[];drawCount();showLogin(msg||'')}
+  function drawMe(){$('me').innerHTML=me?esc(me):''}
+  function blank(){return {id:null,name:'',phone:'',date:'',time:'',guests:'',hall:'',manager:load('gj_mgr','')||me||'',note:'',service:load('gj_service','')||'',deposit:'',lines:[]}}
   function fill(){
     var hs=$('b-hall'),i,ok=false;
     for(i=0;i<hs.options.length;i++)if(hs.options[i].value===cur.hall)ok=true;
@@ -392,7 +471,7 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
     var i,views=document.querySelectorAll('.view');
     for(i=0;i<views.length;i++)views[i].className='view'+(views[i].id==='v-'+v?' on':'');
     for(i=0;i<navBtns.length;i++)navBtns[i].className=navBtns[i].getAttribute('data-view')===v?'active':'';
-    if(v==='list')drawList();
+    if(v==='list'){drawList();if(token)loadBron(function(){drawList()})} /* boshqa menejer yozganlari ham ko'rinsin */
     if(v==='menu')drawMenuTable();
     if(v==='new'){drawItems()}
   }
@@ -477,13 +556,17 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
     var e=check(),i,found=false;if(e)return say(e,true);
     store('gj_service',num(cur.service));
     cur.manager=String(cur.manager).replace(/^\s+|\s+$/g,'');store('gj_mgr',cur.manager);
-    if(!cur.id)cur.id='b'+(new Date().getTime());
+    if(!cur.id)cur.id='b'+(new Date().getTime())+Math.floor(Math.random()*1000);
     cur.saved=new Date().getTime();
-    var copy=JSON.parse(JSON.stringify(cur));
-    for(i=0;i<bron.length;i++)if(bron[i].id===cur.id){bron[i]=copy;found=true}
-    if(!found)bron.push(copy);
-    if(!store('gj_bron',bron))return say('Saqlab bo\'lmadi — brauzer xotirasi yopiq',true);
-    drawCount();drawManagers();drawSums();say('Bron saqlandi');
+    var copy=JSON.parse(JSON.stringify(cur)),btn=this;
+    btn.disabled=true;say('Saqlanmoqda…');
+    api('PUT','/bron/'+encodeURIComponent(copy.id),copy,function(err){
+      btn.disabled=false;
+      if(err)return say('Saqlanmadi: '+err,true);
+      for(i=0;i<bron.length;i++)if(bron[i].id===copy.id){bron[i]=copy;found=true}
+      if(!found)bron.push(copy);
+      drawCount();drawManagers();drawSums();say('Bron saqlandi');
+    });
   };
   $('print').onclick=function(){
     read();if(!cur.lines.length)return say('Kamida bitta taom tanlang',true);
@@ -640,8 +723,14 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
       fill();say('');drawOrder();show('new');return;
     }
     if(this.getAttribute('data-sure')){
-      for(i=bron.length-1;i>=0;i--)if(bron[i].id===del)bron.splice(i,1);
-      store('gj_bron',bron);if(cur.id===del)cur.id=null;drawCount();drawList();drawSums();return;
+      var b=this;b.disabled=true;net('O\'chirilmoqda…');
+      api('DELETE','/bron/'+encodeURIComponent(del),null,function(err){
+        if(err){b.disabled=false;return net('O\'chirilmadi: '+err,true)}
+        net('');
+        for(i=bron.length-1;i>=0;i--)if(bron[i].id===del)bron.splice(i,1);
+        if(cur.id===del)cur.id=null;drawCount();drawList();drawSums();
+      });
+      return;
     }
     this.setAttribute('data-sure','1');this.innerHTML='Aniq o\'chirilsinmi?';
   }
@@ -701,7 +790,21 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
   $('paper').value=load('gj_paper','80');
   $('paper').onchange=function(){store('gj_paper',this.value)};
   $('sync').innerHTML=window.GJ_SYNC?'Oxirgi yangilanish: '+esc(window.GJ_SYNC):'';
-  buildMenu();cur=blank();fill();drawCats();drawItems();drawOrder();drawCount();
+  $('lg-form').onsubmit=function(e){
+    e.preventDefault();
+    var b=$('lg-go');b.disabled=true;$('lg-msg').innerHTML='Tekshirilmoqda…';
+    api('POST','/login',{login:$('lg-user').value,pass:$('lg-pass').value},function(err,r){
+      b.disabled=false;
+      if(err){$('lg-msg').innerHTML=esc(err);$('lg-pass').value='';return}
+      token=r.token;me=r.login;store('gj_token',token);store('gj_login',me);
+      $('lg-pass').value='';$('login').hidden=true;drawMe();
+      if(!cur.manager){cur.manager=me;fill()}
+      loadBron(function(){drawList()});
+    });
+  };
+  $('out').onclick=function(){logout('')};
+  buildMenu();cur=blank();fill();drawCats();drawItems();drawOrder();drawCount();drawMe();
+  if(token)loadBron(function(){drawList()});else showLogin('');
   if(location.hash){var hv=location.hash.slice(1);if($('v-'+hv))show(hv)}
 })();
 </script>
