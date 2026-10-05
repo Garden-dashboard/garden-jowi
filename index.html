@@ -196,7 +196,10 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
   #sheet .tot div{display:flex;justify-content:space-between;padding:3pt 0}
   #sheet .tot .big{font-family:var(--num);font-weight:700;font-size:16pt;border-top:1px solid #000;margin-top:4pt;padding-top:6pt}
   #sheet .sign{margin-top:26pt;display:flex;justify-content:space-between;font-size:10pt;color:#333}
-  /* termal chek (80/58 mm): faqat qora, kulrang yo'q */
+}
+/* termal chek (80/58 mm). Print'dan tashqarida ham amal qiladi — chek bo'yini
+   chop etishdan oldin o'lchash uchun (ekranda #sheet baribir yashirin) */
+  #sheet.rc{margin:0 auto}
   #sheet.rc{width:72mm;padding:2mm 1.5mm 8mm;font-family:Arial,Helvetica,sans-serif;font-size:9.5pt;line-height:1.3;color:#000}
   #sheet.rc.w58{width:48mm;font-size:8pt;padding:1.5mm 1mm 6mm}
   #sheet.rc .c{text-align:center}
@@ -213,6 +216,8 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
   #sheet.rc .big{font-size:13pt;font-weight:700;padding:1.2mm 0}
   #sheet.rc .sg{margin-top:5mm}
   #sheet.rc .ft{margin-top:4mm;font-size:8.5pt}
+@media print{
+  #sheet.rc *{page-break-inside:avoid;break-inside:avoid}
 }
 </style>
 <style id="pgsz">@page{margin:0}</style>
@@ -508,8 +513,15 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
     if(c.pp)h+=kv('Kishi boshiga',fmt(c.pp));
     if(c.dep)h+=kv('Oldindan to\'lov',fmt(c.dep))+kv('Qoldiq',fmt(c.rest));
     h+='<div class="hr"></div><div class="c ft">Olimp Garden · rahmat!</div>';
-    $('sheet').className='rc'+(p==='58'?' w58':'');
-    $('sheet').innerHTML=h;
+    var sh=$('sheet');
+    sh.className='rc'+(p==='58'?' w58':'');
+    sh.innerHTML=h;
+    /* chek bo'yini o'lchab, bitta uzun sahifa qilamiz — aks holda brauzer uni
+       printerning standart varaq bo'yida (≈297 mm) bo'lib, ikkiga kesadi */
+    sh.style.cssText='display:block;position:absolute;left:-9999px;top:0';
+    var mm=Math.ceil(sh.offsetHeight*25.4/96)+8; /* logo bo'yi CSS'da qat'iy, rasm yuklanishini kutish shart emas */
+    $('pgsz').innerHTML='@page{size:'+(p==='58'?58:80)+'mm '+Math.max(mm,60)+'mm;margin:0}';
+    sh.style.cssText='';
   }
   function drawSheetA4(){
     var c=calc(),a=sorted(),i,l,last=null,h='';
