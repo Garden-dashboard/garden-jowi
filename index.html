@@ -132,29 +132,31 @@ tr.off td{opacity:.45}
 .sumrow span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .sumrow b{display:block;font-family:var(--num);font-size:20px;font-weight:700;margin-top:3px}
 tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
-.calhead{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.calhead h3{font-family:var(--serif);font-weight:500;font-size:24px;margin:0 12px;min-width:170px;text-align:center}
-.calhead .nav-m{padding:6px 14px;font-size:20px;line-height:1}
-.chips{margin-left:auto;display:flex;flex-wrap:wrap}
-.chips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;margin:3px 0 3px 6px;font-weight:600;font-size:13px}
+.calwrap{position:relative}
+.datebtn{display:inline-flex;align-items:center;padding:10px 14px}
+.datebtn svg{margin-right:8px;color:var(--gold)}
+.datebtn.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.datebtn.on svg{color:var(--gold2)}
+.calpop{position:absolute;left:0;top:calc(100% + 6px);z-index:30;width:280px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:0 16px 40px rgba(20,38,59,.16)}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.calhead b{font-size:14px}
+.calhead .nav-m{border:0;background:transparent;width:30px;height:30px;border-radius:8px;font-size:18px;line-height:1;color:var(--teal)}
+.calhead .nav-m:hover{background:#f3efe5}
+.chips{display:flex;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;margin:0 6px 0 0;font-weight:600;font-size:13px}
 .chips button.on{background:var(--teal);border-color:var(--teal);color:#fff}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-gap:6px}
-.cal .wd{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700;padding:2px 0 4px}
-.cal .d{min-height:86px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:7px 8px;text-align:left;display:flex;flex-direction:column}
-.cal .d:hover{border-color:var(--gold)}
-.cal .d.out{background:transparent;border-color:transparent;cursor:default}
-.cal .d.past{background:#f6f3ec}
-.cal .d .n{font-weight:700;font-size:14px}
-.cal .d.wk .n{color:var(--bad)}
-.cal .d.today{border:2px solid var(--gold)}
-.cal .d.sel{background:var(--teal);border-color:var(--teal);color:#fff}
-.cal .d .bc{margin-top:auto;font-size:12px;font-weight:700;color:var(--teal)}
-.cal .d .bc span{display:inline-block;background:#e6f1ef;border-radius:999px;padding:2px 8px;margin-bottom:3px}
-.cal .d .bc small{display:block;font-weight:600;color:var(--muted);font-size:11px}
-.cal .d.sel .bc span{background:rgba(255,255,255,.18);color:#fff}
-.cal .d.sel .bc small{color:rgba(255,255,255,.75)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);grid-gap:2px}
+.cal .wd{font-size:10px;color:var(--muted);text-align:center;font-weight:700;padding:2px 0}
+.cal .d{height:34px;border:1px solid transparent;border-radius:8px;background:transparent;padding:0;font-size:13px;position:relative;text-align:center}
+.cal .d:hover{background:#f3efe5}
+.cal .d.out{cursor:default;background:transparent}
+.cal .d.past{color:#a5adb8}
+.cal .d.wk{color:var(--bad)}
+.cal .d.today{border-color:var(--gold);font-weight:700}
+.cal .d.sel{background:var(--teal);color:#fff;font-weight:700}
+.cal .d i{position:absolute;left:50%;bottom:3px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--gold)}
+.cal .d.sel i{background:#fff}
 .ltitle{font-family:var(--serif);font-weight:500;font-size:22px;margin:4px 0 12px}
-@media (max-width:700px){.cal .d{min-height:54px;padding:5px}.cal .d .bc small{display:none}.cal .d .bc span{padding:1px 5px}.chips{margin:8px 0 0}}
 .paper{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--muted)}
 .paper select{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;outline:0;font-size:12px}
 
@@ -195,9 +197,8 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
   #sheet .tot .big{font-family:var(--num);font-weight:700;font-size:16pt;border-top:1px solid #000;margin-top:4pt;padding-top:6pt}
   #sheet .sign{margin-top:26pt;display:flex;justify-content:space-between;font-size:10pt;color:#333}
   /* termal chek (80/58 mm): faqat qora, kulrang yo'q */
-  #sheet.rc{width:72mm;padding:2mm 1.5mm 8mm;font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;line-height:1.3;color:#000;font-weight:700}
-  #sheet.rc *{font-weight:700!important;color:#000!important}
-  #sheet.rc.w58{width:48mm;font-size:8.5pt;padding:1.5mm 1mm 6mm}
+  #sheet.rc{width:72mm;padding:2mm 1.5mm 8mm;font-family:Arial,Helvetica,sans-serif;font-size:9.5pt;line-height:1.3;color:#000}
+  #sheet.rc.w58{width:48mm;font-size:8pt;padding:1.5mm 1mm 6mm}
   #sheet.rc .c{text-align:center}
   #sheet.rc .c img{height:24mm;filter:grayscale(1) contrast(1.6)}
   #sheet.rc.w58 .c img{height:17mm}
@@ -209,9 +210,7 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
   #sheet.rc .hr{border-top:1px dashed #000;margin:2mm 0}
   #sheet.rc .g{font-weight:700;font-size:8.5pt;letter-spacing:.08em;text-transform:uppercase;margin:2.2mm 0 .5mm;border-bottom:1px solid #000}
   #sheet.rc .it{padding:.7mm 0}
-  #sheet.rc .big{font-size:14pt;padding:1.2mm 0}
-  #sheet.rc .it{border-bottom:1px dotted #000}
-  #sheet.rc .hr{border-top-width:2px}
+  #sheet.rc .big{font-size:13pt;font-weight:700;padding:1.2mm 0}
   #sheet.rc .sg{margin-top:5mm}
   #sheet.rc .ft{margin-top:4mm;font-size:8.5pt}
 }
@@ -278,14 +277,15 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
         <div><div class="eyebrow">Garden Jowi · bronlar</div><h1>Banket bronlari</h1></div>
       </div>
       <div class="card" style="margin-bottom:14px">
-        <div class="calhead">
-          <button class="btn ghost nav-m" id="c-prev" aria-label="Oldingi oy">‹</button>
-          <h3 id="c-title"></h3>
-          <button class="btn ghost nav-m" id="c-next" aria-label="Keyingi oy">›</button>
-          <div class="chips" id="chips"><button data-m="today">Bugun</button><button data-m="next">Kelgusi</button><button data-m="month">Butun oy</button><button data-m="all">Hammasi</button></div>
-        </div>
-        <div class="cal" id="cal"></div>
-        <div class="tools" style="margin:12px -5px 0">
+        <div class="tools" style="margin:0 -5px -8px;align-items:center">
+          <div class="calwrap">
+            <button class="btn ghost datebtn" id="c-btn" aria-haspopup="true"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 6.5h13M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.4"/></svg><span id="c-lbl">Sana</span></button>
+            <div class="calpop" id="calpop" hidden>
+              <div class="calhead"><button class="nav-m" id="c-prev" aria-label="Oldingi oy">‹</button><b id="c-title"></b><button class="nav-m" id="c-next" aria-label="Keyingi oy">›</button></div>
+              <div class="cal" id="cal"></div>
+            </div>
+          </div>
+          <div class="chips" id="chips"><button data-m="today">Bugun</button><button data-m="next">Kelgusi</button><button data-m="month">Shu oy</button><button data-m="all">Hammasi</button></div>
           <select id="l-hall"><option value="">Barcha zallar</option></select>
           <select id="l-mgr"><option value="">Barcha menejerlar</option></select>
           <input class="grow" id="l-q" placeholder="Ism yoki telefon…" autocomplete="off">
@@ -576,15 +576,16 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
     for(i=1;i<=days;i++){
       k=iso(new Date(calM.getFullYear(),calM.getMonth(),i));
       var x=by[k],dow=(lead+i-1)%7;
-      h+='<button class="d'+(k<t?' past':'')+(k===t?' today':'')+(dow===6?' wk':'')+(mode==='day'&&k===selDay?' sel':'')+'" data-d="'+k+'"><span class="n">'+i+'</span>'+(x?'<span class="bc"><span>'+x.n+' bron</span><small>'+fmt(x.g)+' kishi</small></span>':'')+'</button>';
+      h+='<button class="d'+(k<t?' past':'')+(k===t?' today':'')+(dow===6?' wk':'')+(mode==='day'&&k===selDay?' sel':'')+'" data-d="'+k+'"'+(x?' title="'+x.n+' bron, '+x.g+' kishi"':'')+'>'+i+(x?'<i></i>':'')+'</button>';
     }
     $('cal').innerHTML=h;
     var bs=$('cal').getElementsByTagName('button');
     for(i=0;i<bs.length;i++)bs[i].onclick=function(){
-      var d=this.getAttribute('data-d');
-      if(mode==='day'&&selDay===d){mode='month';selDay=null}else{mode='day';selDay=d}
+      mode='day';selDay=this.getAttribute('data-d');$('calpop').hidden=true;
       drawList();
     };
+    $('c-lbl').innerHTML=mode==='day'?esc(dayTitle(selDay)):'Sana';
+    $('c-btn').className='btn ghost datebtn'+(mode==='day'?' on':'');
     var cs=$('chips').getElementsByTagName('button');
     for(i=0;i<cs.length;i++)cs[i].className=(cs[i].getAttribute('data-m')===mode||(mode==='day'&&selDay===t&&cs[i].getAttribute('data-m')==='today'))?'on':'';
   }
@@ -666,12 +667,22 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
   $('l-hall').onchange=$('l-mgr').onchange=drawList;
   drawManagers();
   $('l-q').oninput=drawList;
-  $('c-prev').onclick=function(){calM=new Date(calM.getFullYear(),calM.getMonth()-1,1);mode='month';selDay=null;drawList()};
-  $('c-next').onclick=function(){calM=new Date(calM.getFullYear(),calM.getMonth()+1,1);mode='month';selDay=null;drawList()};
+  $('c-prev').onclick=function(e){e.stopPropagation();calM=new Date(calM.getFullYear(),calM.getMonth()-1,1);drawCal()};
+  $('c-next').onclick=function(e){e.stopPropagation();calM=new Date(calM.getFullYear(),calM.getMonth()+1,1);drawCal()};
+  $('c-btn').onclick=function(e){
+    e.stopPropagation();
+    if($('calpop').hidden&&mode==='day'){var p=selDay.split('-');calM=new Date(+p[0],+p[1]-1,1)}
+    $('calpop').hidden=!$('calpop').hidden;drawCal();
+  };
+  $('calpop').onclick=function(e){e.stopPropagation()};
+  document.addEventListener('click',function(){$('calpop').hidden=true});
+  document.addEventListener('keydown',function(e){if(e.keyCode===27)$('calpop').hidden=true});
   (function(){var cs=$('chips').getElementsByTagName('button');for(var j=0;j<cs.length;j++)cs[j].onclick=function(){
     var m=this.getAttribute('data-m'),n=new Date();
-    if(m==='today'){calM=new Date(n.getFullYear(),n.getMonth(),1);mode='day';selDay=iso(n)}
+    calM=new Date(n.getFullYear(),n.getMonth(),1);
+    if(m==='today'){mode='day';selDay=iso(n)}
     else{mode=m;selDay=null}
+    $('calpop').hidden=true;
     drawList();
   }})();
   $('l-reset').onclick=function(){var n=new Date();calM=new Date(n.getFullYear(),n.getMonth(),1);mode='next';selDay=null;$('l-hall').value='';$('l-mgr').value='';$('l-q').value='';drawList()};
