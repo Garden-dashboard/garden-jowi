@@ -222,7 +222,8 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
 .ov{position:fixed;left:0;top:0;right:0;bottom:0;z-index:60;background:rgba(7,30,36,.62);display:flex;align-items:center;justify-content:center;padding:16px}
 .ov[hidden]{display:none}
 .md{background:var(--paper);border-radius:22px;width:100%;max-width:820px;max-height:100%;overflow:auto;display:flex;flex-wrap:wrap;box-shadow:0 30px 80px rgba(0,0,0,.35)}
-.md .big{flex:0 1 auto;max-width:56%;display:flex;align-items:center;justify-content:center;background:#efe8da;border-radius:22px 0 0 22px;overflow:hidden}
+.md{max-width:980px}
+.md .big{flex:0 1 auto;max-width:58%;display:flex;align-items:center;justify-content:center;background:#efe8da;border-radius:22px 0 0 22px;overflow:hidden}
 .md .big img{display:block;width:auto;height:auto;max-width:100%;max-height:calc(100vh - 32px)} /* rasm o'z o'lchamida: cho'zilmaydi, kesilmaydi */
 .md .big.none{flex:1 1 300px;min-height:300px;background:#f3efe5 url(assets/logo.png) center/auto 55% no-repeat}
 .md .info{flex:1 1 340px;padding:22px 24px 20px;display:flex;flex-direction:column;min-width:0}
@@ -677,7 +678,9 @@ tr.added td{background:#f3faf6}
   }
   function openDish(id){
     var m=byId[id];if(!m)return;openM=m;
-    $('m-img').className='big'+(m.img?'':' none');$('m-img').innerHTML=m.img?'<img src="'+esc(m.img)+'" alt="'+esc(m.n)+'">':'';
+    $('m-img').className='big'+(m.img?'':' none');/* oynada katta nusxa (images/big/), u bo'lmasa kartochkadagi kichigi */
+    var big=m.img.indexOf('images/')===0?m.img.replace('images/','images/big/'):m.img;
+    $('m-img').innerHTML=m.img?'<img src="'+esc(big)+'" alt="'+esc(m.n)+'" onerror="this.onerror=null;this.src=\''+esc(m.img)+'\'">':'';
     $('m-cat').innerHTML=esc(m.cat)+(m.sex?' · iiko: '+esc(m.sex):'');
     $('m-name').innerHTML=esc(m.n);$('m-price').innerHTML=fmt(m.p)+' so\'m';
     $('m-desc').className='desc'+(m.d?'':' nodesc');$('m-desc').innerHTML=m.d?esc(m.d):'Tavsif yozilmagan.';
