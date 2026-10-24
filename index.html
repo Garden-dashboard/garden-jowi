@@ -323,6 +323,9 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
 
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .item .ph.none:after{background:rgba(12,25,29,.6)}}
 :root[data-theme="dark"] .item .ph.none:after{background:rgba(12,25,29,.6)}
+.mquick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mquick button{border:1px solid var(--line);background:var(--soft);border-radius:99px;padding:4px 11px;font-size:13px;font-weight:600}
+.md .btn:disabled{opacity:.45;cursor:not-allowed}
 </style>
 <style id="pgsz">@page{margin:0}</style>
 </head>
@@ -499,7 +502,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
       <div class="price" id="m-price"></div>
       <div class="desc" id="m-desc"></div>
       <div class="facts" id="m-facts"></div>
-      <div><label for="m-q">Soni</label><div class="mq"><button id="m-minus" aria-label="Kamaytirish">−</button><input id="m-q" type="number" min="1" inputmode="numeric"><button id="m-plus" aria-label="Ko'paytirish">+</button></div></div>
+      <div><label for="m-q">Soni</label><div class="mq"><button id="m-minus" aria-label="Kamaytirish">−</button><input id="m-q" inputmode="decimal" autocomplete="off"><button id="m-plus" aria-label="Ko'paytirish">+</button></div></div><div class="mquick" id="m-quick"><button>0,5</button><button>1</button><button>1,5</button><button>2</button><button>2,5</button></div>
       <div><label for="m-note">Izoh (oshxonaga)</label><textarea id="m-note" placeholder="Masalan: achchiq bo'lmasin, 19:00 ga tayyor bo'lsin"></textarea></div>
       <div class="msum"><span>Summa</span><b id="m-sum"></b></div>
       <div class="ask">
@@ -692,7 +695,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   }
   function read(){for(var i=0;i<FIELDS.length;i++)cur[FIELDS[i]]=$('b-'+FIELDS[i]).value}
   function calc(){
-    var s=0,i;for(i=0;i<cur.lines.length;i++)s+=cur.lines[i].p*cur.lines[i].q;
+    var s=0,i;for(i=0;i<cur.lines.length;i++)s+=Math.round(cur.lines[i].p*cur.lines[i].q);
     var srv=Math.round(s*num(cur.service)/100),t=s+srv,g=num(cur.guests),d=num(cur.deposit);
     return {sub:s,srv:srv,total:t,pp:g?t/g:0,dep:d,rest:t-d};
   }
@@ -760,18 +763,24 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     $('m-q').value=1;$('m-note').value='';mSum();
     $('ov').hidden=false;setTimeout(function(){$('m-yes').focus()},30);
   }
-  function mQ(){var v=parseInt($('m-q').value,10);return isNaN(v)||v<1?1:v}
-  function mSum(){$('m-sum').innerHTML=fmt(openM.p*mQ())+' so\'m'}
+  /* taom soni: butun yoki kasr (0,5 · 1,5 · 2,25), vergul yoki nuqta bilan; 2 xonagacha */
+  function parseQ(v){v=String(v==null?'':v).replace(/\s/g,'').replace(',','.');if(!/^\d*\.?\d+$/.test(v))return NaN;return Math.round(parseFloat(v)*100)/100}
+  function qtxt(q){return String(Math.round((+q||0)*100)/100).replace('.',',')}
+  function mQ(){var v=parseQ($('m-q').value);return isNaN(v)||v<0.1?null:v}
+  function mSum(){var q=mQ();$('m-sum').innerHTML=q===null?'<span style="color:var(--bad);font-size:13px">Sonni to\'g\'ri yozing: masalan 0,5 yoki 2</span>':fmt(openM.p*q)+' so\'m';$('m-yes').disabled=q===null}
   function closeDish(){$('ov').hidden=true;openM=null}
-  $('m-minus').onclick=function(){$('m-q').value=Math.max(1,mQ()-1);mSum()};
-  $('m-plus').onclick=function(){$('m-q').value=mQ()+1;mSum()};
+  function mStep(d){var q=mQ()||0;$('m-q').value=qtxt(Math.max(0.5,Math.round((q+d)*2)/2));mSum()}
+  $('m-minus').onclick=function(){mStep(-0.5)};
+  $('m-plus').onclick=function(){mStep(0.5)};
+  (function(){var qb=$('m-quick').getElementsByTagName('button');for(var k=0;k<qb.length;k++)qb[k].onclick=function(){$('m-q').value=this.textContent;mSum()}})();
   $('m-q').oninput=mSum;
   $('m-no').onclick=closeDish;
   $('ov').onclick=function(e){if(e.target===this)closeDish()};
   document.addEventListener('keydown',function(e){if(e.keyCode===27&&!$('ov').hidden)closeDish()});
   $('m-yes').onclick=function(){
     var m=openM,note=$('m-note').value.replace(/^\s+|\s+$/g,''),n=mQ(),i;
-    for(i=0;i<cur.lines.length;i++)if(cur.lines[i].id===m.id&&(cur.lines[i].note||'')===note){cur.lines[i].q+=n;break}
+    if(n===null)return;
+    for(i=0;i<cur.lines.length;i++)if(cur.lines[i].id===m.id&&(cur.lines[i].note||'')===note){cur.lines[i].q=Math.round((cur.lines[i].q+n)*100)/100;break}
     if(i===cur.lines.length)cur.lines.push({id:m.id,n:m.n,p:m.p,c:m.cat,q:n,note:note});
     closeDish();drawOrder();drawItems();
   };
@@ -787,21 +796,24 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   function drawOrder(){
     var h='',a=sorted(),i,l,last=null,pos=0;
     for(i=0;i<a.length;i++){
-      l=a[i].l;pos+=l.q;
+      l=a[i].l;pos+=+l.q;
       if(a[i].c!==last){h+='<div class="grp">'+esc(a[i].c)+'</div>';last=a[i].c}
-      h+='<div class="line"><div class="nm">'+esc(l.n)+'<small>'+fmt(l.p)+'</small>'+(l.note?'<i>'+esc(l.note)+'</i>':'')+'</div><div class="q"><button data-ix="'+a[i].ix+'" data-d="-1">−</button><input type="number" min="0" inputmode="numeric" data-ix="'+a[i].ix+'" value="'+l.q+'"><button data-ix="'+a[i].ix+'" data-d="1">+</button></div><div class="sm">'+fmt(l.p*l.q)+'</div></div>';
+      h+='<div class="line"><div class="nm">'+esc(l.n)+'<small>'+fmt(l.p)+'</small>'+(l.note?'<i>'+esc(l.note)+'</i>':'')+'</div><div class="q"><button data-ix="'+a[i].ix+'" data-d="-0.5">−</button><input inputmode="decimal" autocomplete="off" data-ix="'+a[i].ix+'" value="'+qtxt(l.q)+'"><button data-ix="'+a[i].ix+'" data-d="0.5">+</button></div><div class="sm" id="lsm'+a[i].ix+'">'+fmt(l.p*l.q)+'</div></div>';
     }
     $('lines').innerHTML=h||'<div class="empty">Chapdan taom tanlang</div>';
-    $('tk-sub').innerHTML=a.length?a.length+' qator · '+fmt(pos)+' porsiya':'Taom tanlang';
+    $('tk-sub').innerHTML=a.length?a.length+' qator · '+qtxt(pos)+' porsiya':'Taom tanlang';
     var bs=$('lines').getElementsByTagName('button');
-    for(i=0;i<bs.length;i++)bs[i].onclick=function(){var x=+this.getAttribute('data-ix');setQty(x,cur.lines[x].q+ +this.getAttribute('data-d'))};
+    for(i=0;i<bs.length;i++)bs[i].onclick=function(){var x=+this.getAttribute('data-ix');setQty(x,Math.round((cur.lines[x].q+ +this.getAttribute('data-d'))*2)/2)};
     var ins=$('lines').getElementsByTagName('input');
-    for(i=0;i<ins.length;i++)ins[i].onchange=function(){setQty(+this.getAttribute('data-ix'),Math.round(num(this.value)))};
+    for(i=0;i<ins.length;i++){
+      ins[i].oninput=function(){var x=+this.getAttribute('data-ix'),q=parseQ(this.value);if(isNaN(q)||q<=0||!cur.lines[x])return;  /* yozayotganda: faqat summa */
+        cur.lines[x].q=q;$('lsm'+x).innerHTML=fmt(cur.lines[x].p*q);drawSums()};
+      ins[i].onchange=function(){var x=+this.getAttribute('data-ix'),q=parseQ(this.value);setQty(x,isNaN(q)?(cur.lines[x]||{}).q:q)};}
     drawSums();
   }
   function setQty(ix,q){
     if(!cur.lines[ix])return;
-    if(q<1)cur.lines.splice(ix,1);else cur.lines[ix].q=q;
+    if(!(q>0))cur.lines.splice(ix,1);else cur.lines[ix].q=Math.round(q*100)/100;
     drawOrder();drawItems();
   }
   function drawSums(){
@@ -865,7 +877,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     for(i=0;i<a.length;i++){
       l=a[i].l;
       if(a[i].c!==last){h+='<div style="font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:'+(rc.size-0.5)+'pt;border-bottom:1px solid #000;margin-top:1.8mm">'+esc(a[i].c)+'</div>';last=a[i].c}
-      h+='<div style="padding:.5mm 0 0">'+esc(l.n)+(sw.dishNote&&l.note?'<div style="font-style:italic;font-size:'+(rc.size-1)+'pt">↳ '+esc(l.note)+'</div>':'')+'</div>'+kv(l.q+' x '+fmt(l.p),fmt(l.p*l.q));
+      h+='<div style="padding:.5mm 0 0">'+esc(l.n)+(sw.dishNote&&l.note?'<div style="font-style:italic;font-size:'+(rc.size-1)+'pt">↳ '+esc(l.note)+'</div>':'')+'</div>'+kv(qtxt(l.q)+' x '+fmt(l.p),fmt(l.p*l.q));
     }
     h+=hr+kv('Taomlar jami',fmt(c.sub));
     if(sw.service&&c.srv)h+=kv('Xizmat haqi '+num(b.service)+'%',fmt(c.srv));
@@ -903,7 +915,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     for(i=0;i<a.length;i++){
       l=a[i].l;
       if(a[i].c!==last){h+='<tr><td class="g" colspan="4">'+esc(a[i].c)+'</td></tr>';last=a[i].c}
-      h+='<tr><td>'+esc(l.n)+(l.note?'<br><i style="font-size:9pt;color:#555">'+esc(l.note)+'</i>':'')+'</td><td class="num">'+fmt(l.p)+'</td><td class="num">'+l.q+'</td><td class="num">'+fmt(l.p*l.q)+'</td></tr>';
+      h+='<tr><td>'+esc(l.n)+(l.note?'<br><i style="font-size:9pt;color:#555">'+esc(l.note)+'</i>':'')+'</td><td class="num">'+fmt(l.p)+'</td><td class="num">'+qtxt(l.q)+'</td><td class="num">'+fmt(l.p*l.q)+'</td></tr>';
     }
     h+='</table><div class="tot"><div><span>Taomlar jami</span><span>'+fmt(c.sub)+' so\'m</span></div>';
     if(c.srv)h+='<div><span>Xizmat haqi '+num(cur.service)+'%</span><span>'+fmt(c.srv)+' so\'m</span></div>';
