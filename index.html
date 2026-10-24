@@ -315,6 +315,8 @@ tr.added td{background:var(--added)}
 .tg:hover{border-color:var(--gold2)}
 .tg.busy{background:var(--busy);color:var(--busyink);cursor:not-allowed}
 .tg.busy small{color:var(--busyink)}
+.tg.warn{background:var(--soft);border:1px dashed var(--gold2)}
+.tg.warn small{color:var(--gold)}
 .tg.sel{background:var(--teal2);color:#fff;border-color:var(--teal2)}
 .tg.sel small{color:#fff}
 td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6px;margin:1px 2px 1px 0;font-weight:700}
@@ -356,7 +358,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
         <div class="f big"><label for="b-note">Izoh</label><input id="b-note" autocomplete="off"></div>
       </div>
       <div class="tpick" id="tpick" hidden>
-        <div class="th"><b id="tp-title">Stollar</b><span class="tlegend"><i style="background:var(--pill)"></i>Bo'sh<i style="background:var(--teal2)"></i>Tanlangan<i style="background:var(--busy)"></i>Shu kuni band</span></div>
+        <div class="th"><b id="tp-title">Stollar</b><span class="tlegend"><i style="background:var(--pill)"></i>Bo'sh<i style="background:var(--teal2)"></i>Tanlangan<i style="background:var(--busy)"></i>Shu vaqtda band<i style="background:var(--soft);border:1px dashed var(--gold2)"></i>Vaqti noma'lum — tekshiring</span></div>
         <div class="tgrid" id="tgrid"></div>
       </div>
       <div class="pos">
@@ -640,11 +642,16 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   function blank(){return {id:null,name:'',phone:'',date:'',time:'',guests:'',hall:'',manager:load('gj_mgr','')||me||'',note:'',service:load('gj_service','')||'',deposit:'',lines:[],tables:[]}}
   /* ---- stollar: zal tanlanganda iiko'dagi stol raqamlari; shu sanadagi boshqa bronlarga yozilganlari band ---- */
   var TABLES=window.GJ_TABLES||{};
+  /* stol bandligi vaqt bo'yicha: ABET (17:00 gacha) va KECHKI (17:00 dan) alohida.
+     Bir xil vaqtdagi bron — qat'iy band; vaqti yozilmagan bron bo'lsa — ogohlantirish (tanlash mumkin). */
+  function slot(t){t=String(t||'');return !t?'':(t<'17:00'?'abet':'kechki')}
   function busyTables(){
-    var m={},i,j,b;
+    var m={},i,j,b,sb,sc=slot(cur.time);
     for(i=0;i<bron.length;i++){b=bron[i];
       if(b.id===cur.id||b.date!==cur.date||b.hall!==cur.hall||!b.tables)continue;
-      for(j=0;j<b.tables.length;j++)m[b.tables[j]]=b.name||'bron';}
+      sb=slot(b.time);
+      if(sb&&sc&&sb!==sc)continue;                       /* abet va kechki — to'qnashmaydi */
+      for(j=0;j<b.tables.length;j++)m[b.tables[j]]={name:b.name||'bron',hard:!!(sb&&sc),slot:sb};}
     return m;
   }
   function drawTables(){
@@ -654,11 +661,12 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     $('b-tables').innerHTML=cur.tables.length?cur.tables.map(function(n){return '<span>'+n+'</span>'}).join(''):'<em>'+(cur.hall?(nums.length?'Pastdan stol tanlang':'Bu zal uchun stol ro\'yxati yo\'q'):'Avval zalni tanlang')+'</em>';
     $('tpick').hidden=!nums.length;
     if(!nums.length)return;
-    for(i=0;i<nums.length;i++){n=nums[i];
-      cls=bm[n]?'busy':(cur.tables.indexOf(n)>=0?'sel':'');
-      h+='<button class="tg '+cls+'" data-n="'+n+'"'+(bm[n]&&cur.tables.indexOf(n)<0?' disabled title="'+esc(bm[n])+'"':'')+'>'+n+(bm[n]?'<small>'+esc(bm[n])+'</small>':'')+'</button>';}
+    for(i=0;i<nums.length;i++){n=nums[i];var bz=bm[n],on=cur.tables.indexOf(n)>=0;
+      cls=on?'sel':(bz?(bz.hard?'busy':'warn'):'');
+      var tip=bz?(bz.name+(bz.slot?' · '+bz.slot:' · vaqti yozilmagan')+(bz.hard?'':' — tekshiring')):'';
+      h+='<button class="tg '+cls+'" data-n="'+n+'"'+(bz&&bz.hard&&!on?' disabled':'')+(tip?' title="'+esc(tip)+'"':'')+'>'+n+(bz?'<small>'+esc(bz.name)+(bz.slot?' · '+bz.slot:'')+'</small>':'')+'</button>';}
     $('tgrid').innerHTML=h;
-    $('tp-title').innerHTML=esc(cur.hall)+' · '+nums.length+' ta stol'+(cur.date?'':' <span class="note">(band stollarni ko\'rish uchun sanani tanlang)</span>');
+    $('tp-title').innerHTML=esc(cur.hall)+' · '+nums.length+' ta stol'+(cur.date?(cur.time?' · <span class="note">'+(slot(cur.time)==='abet'?'abet (17:00 gacha)':'kechki (17:00 dan)')+'</span>':' <span class="note">(vaqtni tanlang — abet va kechki bronlar alohida hisoblanadi)</span>'):' <span class="note">(band stollarni ko\'rish uchun sanani tanlang)</span>');
     var bs=$('tgrid').getElementsByTagName('button');
     for(i=0;i<bs.length;i++)bs[i].onclick=function(){var n=+this.getAttribute('data-n'),x=cur.tables.indexOf(n);if(x>=0)cur.tables.splice(x,1);else cur.tables.push(n);drawTables()};
   }
@@ -804,6 +812,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   }
   $('b-hall').addEventListener('change',function(){cur.hall=this.value;var ok=TABLES[cur.hall]||[];cur.tables=(cur.tables||[]).filter(function(n){return ok.indexOf(n)>=0});drawTables()});
   $('b-date').addEventListener('change',function(){cur.date=this.value;drawTables()});
+  $('b-time').addEventListener('change',function(){cur.time=this.value;drawTables()});
   for(var f=0;f<FIELDS.length;f++)$('b-'+FIELDS[f]).oninput=$('b-'+FIELDS[f]).onchange=function(){drawSums();say('')};
 
   function say(t,bad){$('msg').innerHTML=t;$('msg').className='msg'+(bad?' bad':'')}
