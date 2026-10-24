@@ -748,7 +748,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     $('m-cat').innerHTML=esc(m.cat)+(m.sex?' · iiko: '+esc(m.sex):'');
     $('m-name').innerHTML=esc(m.n);$('m-price').innerHTML=fmt(m.p)+' so\'m';
     $('m-desc').className='desc'+(m.d?'':' nodesc');$('m-desc').innerHTML=m.d?esc(m.d):'Tavsif yozilmagan.';
-    $('m-facts').innerHTML='<span>Miqdori: <b>'+esc(amountOf(m))+'</b></span>'+(m.grp?'<span>Guruh: <b>'+esc(m.grp)+'</b></span>':'');
+    $('m-facts').innerHTML=m.grp?'<span>Guruh: <b>'+esc(m.grp)+'</b></span>':''; /* miqdor (kg/porsiya) ko'rsatilmaydi — egasi 2026-10-24 */
     $('m-q').value=1;$('m-note').value='';mSum();
     $('ov').hidden=false;setTimeout(function(){$('m-yes').focus()},30);
   }
