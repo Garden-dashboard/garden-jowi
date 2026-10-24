@@ -435,7 +435,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
         </div>
       </div>
       <div class="card"><div class="tw" id="mj-list"><div class="empty">Yuklanmoqda…</div></div></div>
-      <p class="note" style="margin-top:10px"><b>Hisob:</b> marja = (narx + 15% usluga − tannarx) ÷ (narx + 15% usluga) — KPI'dagi marja bilan bir xil asosda. Tannarx — iiko'da so'nggi 60 kunda sotilgan porsiyalarning o'rtacha tannarxi; bu davrda sotilmagan taomlarda tannarx yo'q. Rang: yashil ≥71%, sariq 68–71%, qizil &lt;68% (KPI pog'onalari).</p>
+      <p class="note" style="margin-top:10px"><b>Hisob:</b> 1 porsiya foydasi = narx − tannarx (uslugasiz). Marja = (narx + 15% usluga − tannarx) ÷ (narx + 15% usluga) — KPI'dagi marja bilan bir xil asosda. Tannarx — iiko'da so'nggi 60 kunda sotilgan porsiyalarning o'rtacha tannarxi; bu davrda sotilmagan taomlarda tannarx yo'q. Rang: yashil ≥71%, sariq 68–71%, qizil &lt;68% (KPI pog'onalari).</p>
     </section>
 
     <!-- SOZLAMALAR (faqat administrator) -->
@@ -860,7 +860,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     for(i=0;i<MENU.length;i++){m=MENU[i];if(m.hide)continue;
       c=COSTS[m.id];if(!c){nocost++;continue}
       mp=dishMarja(m.p,c.c);
-      rows.push({m:m,c:c.c,q:c.q,mp:mp,gp:m.p*(1+SRV)-c.c});}
+      rows.push({m:m,c:c.c,q:c.q,mp:mp,gp:m.p-c.c});  /* 1 porsiya foydasi — uslugasiz: narx − tannarx */}
     var all=rows.slice();
     rows=rows.filter(function(r){
       if(cat&&r.m.cat!==cat)return false;
