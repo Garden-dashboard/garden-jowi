@@ -323,6 +323,8 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
 
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .item .ph.none:after{background:rgba(12,25,29,.6)}}
 :root[data-theme="dark"] .item .ph.none:after{background:rgba(12,25,29,.6)}
+.mtag{display:inline-block;border-radius:99px;padding:1px 8px;font-weight:700;font-size:12.5px}
+.mtag.good{background:var(--pill);color:var(--good)}.mtag.warn{background:var(--soft);color:var(--gold)}.mtag.bad{background:var(--busy);color:var(--busyink)}
 .mquick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .mquick button{border:1px solid var(--line);background:var(--soft);border-radius:99px;padding:4px 11px;font-size:13px;font-weight:600}
 .md .btn:disabled{opacity:.45;cursor:not-allowed}
@@ -336,6 +338,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     <div class="nav-group">Banket</div>
     <button data-view="new" class="active">Yangi banket</button>
     <button data-view="list">Bronlar <em id="cnt"></em></button>
+    <button data-view="marja">Taomlar marjasi</button>
     <div class="nav-group" id="adm-grp" hidden>Administrator</div>
     <button data-view="set" id="adm-btn" hidden>Sozlamalar</button>
     <div class="theme"><label>Ko'rinish</label><div class="tseg" id="tseg"><button data-t="light">☀ Kun</button><button data-t="dark">☾ Tun</button><button data-t="auto">Avto</button></div></div>
@@ -378,6 +381,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
             <div class="sr"><span>Taomlar jami</span><b id="s-sub">0</b></div>
             <div class="sr"><span>Xizmat haqi</span><span class="srv"><input class="pc" id="b-service" type="number" min="0" max="100" inputmode="numeric" placeholder="0">%<b id="s-srv">0</b></span></div>
             <div class="sr total"><span>Jami</span><b id="s-total">0</b></div>
+            <div class="sr" id="s-mrow" hidden><span>Menyu marjasi <span class="note">(usluga bilan)</span></span><b id="s-marja">—</b></div>
             <div class="sr pp"><span>Kishi boshiga</span><b id="s-pp">—</b></div>
             <div class="sr"><span>Oldindan to'lov</span><input id="b-deposit" type="number" min="0" inputmode="numeric"></div>
             <div class="sr"><span>Qoldiq</span><b id="s-rest">0</b></div>
@@ -413,6 +417,25 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
       <h3 class="ltitle"><span id="l-title"></span> <span class="note" id="net"></span></h3>
       <div class="sumrow" id="l-sum"></div>
       <div class="card"><div class="tw" id="list"></div></div>
+    </section>
+
+    <!-- TAOMLAR MARJASI -->
+    <section class="view" id="v-marja">
+      <div class="head">
+        <div><div class="eyebrow">Garden Jowi · marja</div><h1>Taomlar marjasi</h1></div>
+        <div class="note" id="mj-src"></div>
+      </div>
+      <div class="sumrow" id="mj-sum"></div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="tools" style="margin-bottom:0">
+          <select id="mj-cat"></select>
+          <select id="mj-lvl"><option value="">Hamma marja</option><option value="hi">71% va yuqori</option><option value="mid">68–71%</option><option value="lo">68% dan past</option></select>
+          <select id="mj-sort"><option value="mp">Marja % (kamdan)</option><option value="mpd">Marja % (ko'pdan)</option><option value="gp">Bir porsiya foydasi</option><option value="q">Ko'p sotilgani</option><option value="n">Nomi</option></select>
+          <input class="grow" id="mj-q" placeholder="Taom qidirish…" autocomplete="off">
+        </div>
+      </div>
+      <div class="card"><div class="tw" id="mj-list"><div class="empty">Yuklanmoqda…</div></div></div>
+      <p class="note" style="margin-top:10px"><b>Hisob:</b> marja = (narx + 15% usluga − tannarx) ÷ (narx + 15% usluga) — KPI'dagi marja bilan bir xil asosda. Tannarx — iiko'da so'nggi 60 kunda sotilgan porsiyalarning o'rtacha tannarxi; bu davrda sotilmagan taomlarda tannarx yo'q. Rang: yashil ≥71%, sariq 68–71%, qizil &lt;68% (KPI pog'onalari).</p>
     </section>
 
     <!-- SOZLAMALAR (faqat administrator) -->
@@ -707,6 +730,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     var i,views=document.querySelectorAll('.view');
     for(i=0;i<views.length;i++)views[i].className='view'+(views[i].id==='v-'+v?' on':'');
     for(i=0;i<navBtns.length;i++)navBtns[i].className=navBtns[i].getAttribute('data-view')===v?'active':'';
+    if(v==='marja'){loadCosts(function(err){if(err)$('mj-list').innerHTML='<div class="empty">'+esc(err)+'</div>';drawMarja()})}
     if(v==='list'){drawList();if(token)loadBron(function(){drawList()})} /* boshqa menejer yozganlari ham ko'rinsin */
     if(v==='set'){if(!isAdmin)return show('new');openSettings()}
     if(v==='new'){drawItems()}
@@ -816,8 +840,56 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     if(!(q>0))cur.lines.splice(ix,1);else cur.lines[ix].q=Math.round(q*100)/100;
     drawOrder();drawItems();
   }
+  /* ---- tannarx (serverdan, faqat login bilan) va marja ---- */
+  var COSTS=null,costsAt='',SRV=0.15;
+  function loadCosts(cb){
+    if(COSTS){if(cb)cb();return}
+    api('GET','/costs',null,function(err,r){
+      if(!err&&r.costs){COSTS=r.costs.items||{};costsAt=r.costs.at||''}
+      if(cb)cb(err);drawSums();
+    });
+  }
+  function dishMarja(p,c){var r=p*(1+SRV);return r>0?(r-c)/r:0}
+  function mLvl(m){return m>=0.71?['good','yuqori']:m>=0.68?['warn','o\'rta']:['bad','past']}
+  function drawMarja(){
+    if(!COSTS){$('mj-list').innerHTML='<div class="empty">Tannarx ma\'lumoti hali yuklanmadi</div>';return}
+    var cat=$('mj-cat').value,lv=$('mj-lvl').value,q=$('mj-q').value.toLowerCase().replace(/^\s+|\s+$/g,''),srt=$('mj-sort').value;
+    var cl=catList(),h='<option value="">Barcha bo\'limlar</option>',i;for(i=0;i<cl.length;i++)h+='<option'+(cl[i]===cat?' selected':'')+'>'+esc(cl[i])+'</option>';
+    $('mj-cat').innerHTML=h;$('mj-cat').value=cat;
+    var rows=[],nocost=0,m,c,mp;
+    for(i=0;i<MENU.length;i++){m=MENU[i];if(m.hide)continue;
+      c=COSTS[m.id];if(!c){nocost++;continue}
+      mp=dishMarja(m.p,c.c);
+      rows.push({m:m,c:c.c,q:c.q,mp:mp,gp:m.p*(1+SRV)-c.c});}
+    var all=rows.slice();
+    rows=rows.filter(function(r){
+      if(cat&&r.m.cat!==cat)return false;
+      if(q&&r.m.n.toLowerCase().indexOf(q)<0)return false;
+      if(lv==='hi'&&r.mp<0.71)return false;if(lv==='mid'&&(r.mp<0.68||r.mp>=0.71))return false;if(lv==='lo'&&r.mp>=0.68)return false;
+      return true;});
+    rows.sort(function(a,b){return srt==='mp'?a.mp-b.mp:srt==='mpd'?b.mp-a.mp:srt==='gp'?b.gp-a.gp:srt==='q'?b.q-a.q:(a.m.n<b.m.n?-1:1)});
+    var cnt=function(f){return all.filter(f).length},sold=all.reduce(function(s,r){return s+r.q*r.m.p*(1+SRV)},0),cost=all.reduce(function(s,r){return s+r.q*r.c},0);
+    $('mj-sum').innerHTML='<div><span>Sotuvdagi o\'rtacha marja</span><b>'+(sold?((sold-cost)/sold*100).toFixed(1).replace('.',','):'—')+'%</b></div>'+
+      '<div><span>71% va yuqori</span><b style="color:var(--good)">'+cnt(function(r){return r.mp>=0.71})+'</b></div>'+
+      '<div><span>68–71%</span><b style="color:var(--gold)">'+cnt(function(r){return r.mp>=0.68&&r.mp<0.71})+'</b></div>'+
+      '<div><span>68% dan past</span><b style="color:var(--bad)">'+cnt(function(r){return r.mp<0.68})+'</b></div>'+
+      '<div><span>Tannarxi yo\'q</span><b>'+nocost+'</b></div>';
+    $('mj-src').innerHTML=costsAt?'tannarx: iiko, '+esc(costsAt)+' holati':'';
+    h='<table><tr><th>Taom</th><th>Bo\'lim</th><th class="num">Narx</th><th class="num">Tannarx</th><th class="num">1 porsiya foydasi</th><th class="num">Marja</th><th class="num">60 kunda sotildi</th></tr>';
+    for(i=0;i<rows.length&&i<300;i++){var r=rows[i],L=mLvl(r.mp);
+      h+='<tr><td>'+esc(r.m.n)+'</td><td class="note">'+esc(r.m.cat)+'</td><td class="num">'+fmt(r.m.p)+'</td><td class="num">'+fmt(r.c)+'</td><td class="num">'+fmt(r.gp)+'</td>'+
+         '<td class="num"><span class="mtag '+L[0]+'">'+(r.mp*100).toFixed(1).replace('.',',')+'%</span></td><td class="num">'+qtxt(r.q)+'</td></tr>';}
+    $('mj-list').innerHTML=rows.length?h+'</table>'+(rows.length>300?'<p class="note">Yana '+(rows.length-300)+' ta — filtr bilan toraytiring</p>':''):'<div class="empty">Topilmadi</div>';
+  }
+  $('mj-cat').onchange=$('mj-lvl').onchange=$('mj-sort').onchange=function(){drawMarja()};
+  $('mj-q').oninput=function(){drawMarja()};
   function drawSums(){
     read();var c=calc();
+    if(COSTS&&cur.lines.length){var rv=0,cs=0,miss=0,i;
+      for(i=0;i<cur.lines.length;i++){var l=cur.lines[i],k=COSTS[l.id];rv+=l.p*l.q*(1+SRV);if(k)cs+=k.c*l.q;else miss++}
+      var mp=rv?(rv-cs)/rv:0,L=mLvl(mp);$('s-mrow').hidden=false;
+      $('s-marja').innerHTML='<span class="mtag '+L[0]+'">'+(mp*100).toFixed(1).replace('.',',')+'%</span>'+(miss?' <span class="note" title="tannarxi yo\'q taomlar">('+miss+' taomsiz)</span>':'');
+    }else $('s-mrow').hidden=true;
     $('s-sub').innerHTML=fmt(c.sub);$('s-srv').innerHTML=fmt(c.srv);$('s-total').innerHTML=fmt(c.total);
     $('s-pp').innerHTML=c.pp?fmt(c.pp):'—';$('s-rest').innerHTML=fmt(c.rest);
     $('title').innerHTML=cur.id?'Banket: '+esc(cur.name||'nomsiz'):'Yangi banket';
@@ -1224,7 +1296,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
       token=r.token;me=r.login;store('gj_token',token);store('gj_login',me);
       $('lg-pass').value='';$('login').hidden=true;drawMe();
       if(!cur.manager){cur.manager=me;fill()}
-      loadSettings();loadBron(function(){drawList()});
+      loadSettings();loadBron(function(){drawList()});loadCosts();
     });
   };
   function setTheme(t){
@@ -1236,7 +1308,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   (function(){var bs=$('tseg').getElementsByTagName('button');for(var i=0;i<bs.length;i++)bs[i].onclick=function(){setTheme(this.getAttribute('data-t'))};setTheme(load('gj_theme','auto'))})();
   $('out').onclick=function(){logout('')};
   buildMenu();cur=blank();fill();drawCats();drawItems();drawOrder();drawCount();drawMe();drawAdmin();
-  if(token){loadSettings();loadBron(function(){drawList()})}else showLogin('');
+  if(token){loadSettings();loadBron(function(){drawList()});loadCosts()}else showLogin('');
   if(location.hash){var hv=location.hash.slice(1);if($('v-'+hv))show(hv)}
 })();
 </script>
