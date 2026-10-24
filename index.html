@@ -381,7 +381,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
             <div class="sr"><span>Taomlar jami</span><b id="s-sub">0</b></div>
             <div class="sr"><span>Xizmat haqi</span><span class="srv"><input class="pc" id="b-service" type="number" min="0" max="100" inputmode="numeric" placeholder="0">%<b id="s-srv">0</b></span></div>
             <div class="sr total"><span>Jami</span><b id="s-total">0</b></div>
-            <div class="sr" id="s-mrow" hidden><span>Menyu marjasi <span class="note">(usluga bilan)</span></span><b id="s-marja">—</b></div>
+
             <div class="sr pp"><span>Kishi boshiga</span><b id="s-pp">—</b></div>
             <div class="sr"><span>Oldindan to'lov</span><input id="b-deposit" type="number" min="0" inputmode="numeric"></div>
             <div class="sr"><span>Qoldiq</span><b id="s-rest">0</b></div>
@@ -885,11 +885,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   $('mj-q').oninput=function(){drawMarja()};
   function drawSums(){
     read();var c=calc();
-    if(COSTS&&cur.lines.length){var rv=0,cs=0,miss=0,i;
-      for(i=0;i<cur.lines.length;i++){var l=cur.lines[i],k=COSTS[l.id];rv+=l.p*l.q*(1+SRV);if(k)cs+=k.c*l.q;else miss++}
-      var mp=rv?(rv-cs)/rv:0,L=mLvl(mp);$('s-mrow').hidden=false;
-      $('s-marja').innerHTML='<span class="mtag '+L[0]+'">'+(mp*100).toFixed(1).replace('.',',')+'%</span>'+(miss?' <span class="note" title="tannarxi yo\'q taomlar">('+miss+' taomsiz)</span>':'');
-    }else $('s-mrow').hidden=true;
+    /* menyu marjasi savatda KO'RSATILMAYDI (mehmon ko'rishi mumkin) — faqat 'Taomlar marjasi' bo'limida */
     $('s-sub').innerHTML=fmt(c.sub);$('s-srv').innerHTML=fmt(c.srv);$('s-total').innerHTML=fmt(c.total);
     $('s-pp').innerHTML=c.pp?fmt(c.pp):'—';$('s-rest').innerHTML=fmt(c.rest);
     $('title').innerHTML=cur.id?'Banket: '+esc(cur.name||'nomsiz'):'Yangi banket';
