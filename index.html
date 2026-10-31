@@ -350,6 +350,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     <section class="view on" id="v-new">
       <div class="head">
         <div><div class="eyebrow">Garden Jowi · banket</div><h1 id="title">Yangi banket</h1></div>
+        <button class="btn ghost" id="backlist">&#8592; Bronlar</button>
         <button class="btn ghost" id="clear">Yangi (tozalash)</button>
       </div>
       <div class="form">
@@ -359,7 +360,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
         <div class="f"><label for="b-time">Vaqt</label><input id="b-time" type="time"></div>
         <div class="f"><label for="b-guests">Mehmonlar soni</label><input id="b-guests" type="number" min="1" inputmode="numeric"></div>
         <div class="f"><label for="b-hall">Zal</label><select id="b-hall"><option value="">Tanlang</option><option>1-qavat</option><option>2-qavat</option><option>Zal katta</option><option>Qora uy</option><option>Ko'cha katta №1</option><option>Ko'cha katta №2</option><option>Ko'cha oilaviy</option><option>Terra</option><option>Topchan va Supa</option></select></div>
-        <div class="f"><label for="b-manager">Qabul qilgan menejer</label><input id="b-manager" list="mgrs" autocomplete="off"><datalist id="mgrs"></datalist></div>
+        <div class="f"><label for="b-manager">Qabul qilgan (login)</label><input id="b-manager" readonly tabindex="-1" title="Bronni yaratgan login — avtomatik, o'zgartirib bo'lmaydi"></div>
         <div class="f tables"><label>Stollar</label><div class="tchips" id="b-tables"></div></div>
         <div class="f big"><label for="b-note">Izoh</label><input id="b-note" autocomplete="off"></div>
       </div>
@@ -598,7 +599,14 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   function lineCat(l){var m=byId[l.id];return m?m.cat:(l.c||'Boshqa')}
 
   /* --- joriy banket --- */
-  var FIELDS=['name','phone','date','time','guests','hall','manager','note','service','deposit'];
+  /* manager bu ro'yxatda YO'Q: qo'lda yozilmaydi — bronni yaratgan login (server ham shuni qo'yadi) */
+  var FIELDS=['name','phone','date','time','guests','hall','note','service','deposit'];
+  /* CRM bronlari "Hostes (Xostes)" ko'rinishida saqlanadi — ekranda faqat login nomi */
+  function mgrName(m){m=String(m||'').replace(/^\s+|\s+$/g,'');var x=m.match(/^Hostes \((.*)\)$/);return x?x[1]:m}
+  /* KPI egasi: menyuni yozgan login (xostes bronini menejer to'ldirsa — menejer), bo'lmasa qabul qilgan */
+  function kpiName(b){return b.menuBy||mgrName(b.manager)}
+  /* "Xostes · menyu: Jahongir" — bron va menyu boshqa-boshqa odamniki bo'lsa ikkalasi */
+  function whoTxt(b,mb){var a=mgrName(b.manager);mb=mb||b.menuBy;return mb&&mb.toLowerCase()!==a.toLowerCase()?a+' · menyu: '+mb:a}
   var cur, bron=[], cat=null;
 
   /* --- umumiy ombor (Cloudflare Worker + D1): bronlar shu yerda, brauzerda emas --- */
@@ -665,7 +673,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   var setUpdated='';
   function drawAdmin(){$('adm-grp').hidden=$('adm-btn').hidden=!isAdmin}
   function drawMe(){$('me').innerHTML=me?esc(me):''}
-  function blank(){return {id:null,name:'',phone:'',date:'',time:'',guests:'',hall:'',manager:load('gj_mgr','')||me||'',note:'',service:load('gj_service','')||'',deposit:'',lines:[],tables:[]}}
+  function blank(){return {id:null,name:'',phone:'',date:'',time:'',guests:'',hall:'',manager:me||'',note:'',service:load('gj_service','')||'',deposit:'',lines:[],tables:[]}}
   /* ---- stollar: zal tanlanganda iiko'dagi stol raqamlari; shu sanadagi boshqa bronlarga yozilganlari band ---- */
   var TABLES=window.GJ_TABLES||{};
   /* stol bandligi vaqt bo'yicha: ABET (17:00 gacha) va KECHKI (17:00 dan) alohida.
@@ -701,17 +709,16 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     for(i=0;i<hs.options.length;i++)if(hs.options[i].value===cur.hall)ok=true;
     if(!ok&&cur.hall){var o=document.createElement('option');o.value=o.text=cur.hall;hs.appendChild(o)} /* eski bronda qo'lda yozilgan zal */
     for(i=0;i<FIELDS.length;i++)$('b-'+FIELDS[i]).value=cur[FIELDS[i]]==null?'':cur[FIELDS[i]];
+    $('b-manager').value=whoTxt({manager:cur.manager||me,menuBy:cur.menuBy},cur.menuBy||me);
     drawTables();
   }
   function managers(){
     var seen={},a=[],i,m;
-    for(i=0;i<bron.length;i++){m=String(bron[i].manager||'').replace(/^\s+|\s+$/g,'');if(m&&!seen[m.toLowerCase()]){seen[m.toLowerCase()]=1;a.push(m)}}
+    for(i=0;i<bron.length;i++){m=kpiName(bron[i]);if(m&&!seen[m.toLowerCase()]){seen[m.toLowerCase()]=1;a.push(m)}}
     return a.sort();
   }
   function drawManagers(){
     var a=managers(),h='',i,s=$('l-mgr'),keep=s.value;
-    for(i=0;i<a.length;i++)h+='<option value="'+esc(a[i])+'">';
-    $('mgrs').innerHTML=h;
     h='<option value="">Barcha menejerlar</option>';
     for(i=0;i<a.length;i++)h+='<option>'+esc(a[i])+'</option>';
     s.innerHTML=h;s.value=keep;
@@ -901,21 +908,25 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     if(!cur.name.replace(/\s/g,''))return 'Mehmon ismini yozing';
     if(!cur.date)return 'Sanani tanlang';
     if(!num(cur.guests))return 'Mehmonlar sonini yozing';
-    if(!String(cur.manager||'').replace(/\s/g,''))return 'Bronni qabul qilgan menejer ismini yozing';
+    if(!cur.manager)cur.manager=me;
+    if(!cur.manager)return 'Qayta kiring — login aniqlanmadi';
+    if(cur.lines.length&&!cur.menuBy)cur.menuBy=me; /* menyuni birinchi yozgan login — KPI unga */
     if(!cur.lines.length)return 'Kamida bitta taom tanlang';
     return '';
   }
   $('save').onclick=function(){
     var e=check(),i,found=false;if(e)return say(e,true);
     store('gj_service',num(cur.service));
-    cur.manager=String(cur.manager).replace(/^\s+|\s+$/g,'');store('gj_mgr',cur.manager);
     if(!cur.id)cur.id='b'+(new Date().getTime())+Math.floor(Math.random()*1000);
     cur.saved=new Date().getTime();
     var copy=JSON.parse(JSON.stringify(cur)),btn=this;
     btn.disabled=true;say('Saqlanmoqda…');
-    api('PUT','/bron/'+encodeURIComponent(copy.id),copy,function(err){
+    api('PUT','/bron/'+encodeURIComponent(copy.id),copy,function(err,r){
       btn.disabled=false;
       if(err)return say('Saqlanmadi: '+err,true);
+      if(r.manager){copy.manager=cur.manager=r.manager} /* server qo'ygan loginlar */
+      if(r.menuBy!=null)copy.menuBy=cur.menuBy=r.menuBy;
+      $('b-manager').value=whoTxt(cur,cur.menuBy||me);
       for(i=0;i<bron.length;i++)if(bron[i].id===copy.id){bron[i]=copy;found=true}
       if(!found)bron.push(copy);
       drawCount();drawManagers();drawSums();say('Bron saqlandi');
@@ -925,7 +936,8 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     read();if(!cur.lines.length)return say('Kamida bitta taom tanlang',true);
     drawSheet();window.print();
   };
-  $('clear').onclick=function(){cur=blank();fill();say('');drawOrder();drawItems()};
+  $('backlist').onclick=function(){show('list')};
+  $('clear').onclick=function(){cur=blank();fill();say('');drawOrder();drawItems();$('title').innerHTML='Yangi banket'};
 
   /* --- chop etiladigan varaq --- */
   /* termal chek HTML — dizayni Sozlamalar → Chek dizayni (rc) dan; chop etish va sozlamadagi ko'rinish bir xil */
@@ -939,7 +951,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     if(rc.headText)h+='<div style="text-align:center;font-weight:700;letter-spacing:.1em;font-size:'+rc.titleSize+'pt;margin:1mm 0 2mm">'+esc(rc.headText)+'</div>';
     h+=kv('Mehmon',b.name);if(sw.phone)h+=kv('Telefon',b.phone);
     h+=kv('Sana',dmy(b.date)+(b.time?' '+b.time:''))+kv('Mehmonlar',b.guests?b.guests+' kishi':'');
-    if(sw.hall)h+=kv('Zal',b.hall);if(sw.hall&&b.tables&&b.tables.length)h+=kv('Stollar',b.tables.join(', '));if(sw.manager)h+=kv('Qabul qildi',b.manager);
+    if(sw.hall)h+=kv('Zal',b.hall);if(sw.hall&&b.tables&&b.tables.length)h+=kv('Stollar',b.tables.join(', '));if(sw.manager)h+=kv('Qabul qildi',kpiName(b));
     if(sw.note&&b.note)h+='<div style="font-style:italic;margin-top:.6mm">'+esc(b.note)+'</div>';
     h+=hr;
     for(i=0;i<a.length;i++){
@@ -977,7 +989,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     h+='<div><span>Mehmon: </span>'+esc(cur.name)+'</div><div><span>Telefon: </span>'+esc(cur.phone)+'</div>';
     h+='<div><span>Sana: </span>'+esc(dmy(cur.date))+(cur.time?' · '+esc(cur.time):'')+'</div><div><span>Mehmonlar soni: </span>'+esc(cur.guests)+'</div>';
     if(cur.hall)h+='<div><span>Zal: </span>'+esc(cur.hall)+(cur.tables&&cur.tables.length?' · stollar '+esc(cur.tables.join(', ')):'')+'</div>';
-    if(cur.manager)h+='<div><span>Qabul qildi: </span>'+esc(cur.manager)+'</div>';
+    if(cur.manager)h+='<div><span>Qabul qildi: </span>'+esc(kpiName(cur))+'</div>';
     if(cur.note)h+='<div><span>Izoh: </span>'+esc(cur.note)+'</div>';
     h+='</div><table><tr><th style="text-align:left">Taom</th><th class="num">Narxi</th><th class="num">Soni</th><th class="num">Summa</th></tr>';
     for(i=0;i<a.length;i++){
@@ -1015,7 +1027,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     var hall=$('l-hall').value,q=$('l-q').value.toLowerCase().replace(/\s+/g,'');
     if(hall&&b.hall!==hall)return false;
     var mg=$('l-mgr').value;
-    if(mg&&String(b.manager||'').replace(/^\s+|\s+$/g,'').toLowerCase()!==mg.toLowerCase())return false;
+    if(mg&&kpiName(b).toLowerCase()!==mg.toLowerCase())return false;
     if(q&&(String(b.name)+String(b.phone)).toLowerCase().replace(/\s+/g,'').indexOf(q)<0)return false;
     return true;
   }
@@ -1073,7 +1085,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     h='<table><tr><th>Sana</th><th>Mehmon</th><th>Telefon</th><th>Zal</th><th>Stollar</th><th>Qabul qildi</th><th class="num">Kishi</th><th class="num">Jami</th><th class="num">Kishi boshiga</th><th class="num">Oldindan</th><th class="num">Qoldiq</th><th></th></tr>';
     for(i=0;i<a.length;i++){
       b=a[i];cur=b;c=calc();
-      h+='<tr'+(b.date===today?' class="today" title="Bugun"':'')+'><td>'+esc(dmy(b.date))+(b.time?'<br><span class="note">'+esc(b.time)+'</span>':'')+'</td><td><b>'+esc(b.name)+'</b>'+(b.note?'<br><span class="note">'+esc(b.note)+'</span>':'')+'</td><td>'+esc(b.phone)+'</td><td>'+esc(b.hall)+'</td><td>'+(b.tables&&b.tables.length?b.tables.map(function(n){return '<span class="st">'+n+'</span>'}).join(''):'<span class="note">—</span>')+'</td><td>'+(b.manager?esc(b.manager):'<span class="note">—</span>')+'</td><td class="num">'+esc(b.guests)+'</td><td class="num">'+fmt(c.total)+'</td><td class="num">'+(c.pp?fmt(c.pp):'—')+'</td><td class="num">'+fmt(c.dep)+'</td><td class="num">'+fmt(c.rest)+'</td><td style="white-space:nowrap"><button class="btn ghost" data-open="'+esc(b.id)+'">Ochish</button> <button class="btn danger" data-del="'+esc(b.id)+'">O\'chirish</button></td></tr>';
+      h+='<tr'+(b.date===today?' class="today" title="Bugun"':'')+'><td>'+esc(dmy(b.date))+(b.time?'<br><span class="note">'+esc(b.time)+'</span>':'')+'</td><td><b>'+esc(b.name)+'</b>'+(b.note?'<br><span class="note">'+esc(b.note)+'</span>':'')+'</td><td>'+esc(b.phone)+'</td><td>'+esc(b.hall)+'</td><td>'+(b.tables&&b.tables.length?b.tables.map(function(n){return '<span class="st">'+n+'</span>'}).join(''):'<span class="note">—</span>')+'</td><td>'+(b.manager?esc(whoTxt(b)):'<span class="note">—</span>')+'</td><td class="num">'+esc(b.guests)+'</td><td class="num">'+fmt(c.total)+'</td><td class="num">'+(c.pp?fmt(c.pp):'—')+'</td><td class="num">'+fmt(c.dep)+'</td><td class="num">'+fmt(c.rest)+'</td><td style="white-space:nowrap"><button class="btn ghost" data-open="'+esc(b.id)+'">Ochish</button> <button class="btn danger" data-del="'+esc(b.id)+'">O\'chirish</button></td></tr>';
     }
     cur=keep;
     $('list').innerHTML=h+'</table>';
@@ -1083,8 +1095,20 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   function listClick(){
     var id=this.getAttribute('data-open'),del=this.getAttribute('data-del'),i;
     if(id){
-      for(i=0;i<bron.length;i++)if(bron[i].id===id)cur=JSON.parse(JSON.stringify(bron[i]));
-      fill();say('');drawOrder();show('new');return;
+      var found=null;
+      for(i=0;i<bron.length;i++)if(bron[i].id===id)found=bron[i];
+      if(!found){say('Bron topilmadi — sahifani yangilang',true);return}
+      try{
+        cur=JSON.parse(JSON.stringify(found));
+        if(!cur.lines)cur.lines=[];
+        if(!cur.tables)cur.tables=[];
+        fill();say('');drawOrder();show('new');
+        /* qaysi bron ochilganini ANIQ ko'rsatamiz (ilgari "Yangi banket" yozuvi qolib,
+           ochilmagandek tuyulardi — xostes bronida menyu bo'lmaydi) */
+        $('title').innerHTML=esc(cur.name||'Bron')+(cur.date?' · '+esc(dmy(cur.date)):'')+(cur.time?' '+esc(cur.time):'');
+        try{window.scrollTo(0,0)}catch(e2){}
+      }catch(e){say('Ochishda xato: '+(e&&e.message?e.message:e),true)}
+      return;
     }
     if(this.getAttribute('data-sure')){
       var b=this;b.disabled=true;net('O\'chirilmoqda…');
