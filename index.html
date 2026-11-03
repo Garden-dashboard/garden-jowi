@@ -44,6 +44,11 @@ button{cursor:pointer}
 .nav button:hover{color:#fff}
 .nav button.active{background:rgba(255,255,255,.11);color:#fff}
 .nav button em{float:right;font-style:normal;font-size:12px;color:var(--gold2)}
+/* oy boshidan Jowi banket menyulari marjasi (Bronlar ostida) */
+.mjb{margin:0 0 3px;padding:8px 12px;border-radius:9px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);font-size:12px;line-height:1.3}
+.mjb b{float:right;font-size:14px;color:#fff}
+.mjb.good b{color:#6fd39d}.mjb.warn b{color:var(--gold2)}.mjb.bad b{color:#f4a593}
+.mjb small{display:block;clear:both;font-size:11px;color:rgba(255,255,255,.45)}
 .who{margin-top:auto;padding:12px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.55)}
 
 /* ish maydoni */
@@ -189,6 +194,9 @@ tr.today td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
   .logo small{display:none}
   .nav-group,.who{display:none}
   .nav button{width:auto;margin:0 4px 4px 0}
+  .mjb{display:inline-block;margin:0 4px 4px 0}
+  .mjb b{float:none;margin-left:6px}
+  .mjb small{display:none}
   .main{padding:16px 16px 32px}
   h1{font-size:25px}
   .pos{flex-direction:column}
@@ -338,6 +346,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     <div class="nav-group">Banket</div>
     <button data-view="new" class="active">Yangi banket</button>
     <button data-view="list">Bronlar <em id="cnt"></em></button>
+    <div class="mjb" id="mjb" hidden><span id="mjb-t">Oy marjasi</span><b id="mjb-v">—</b><small id="mjb-s"></small></div>
     <button data-view="marja">Taomlar marjasi</button>
     <div class="nav-group" id="adm-grp" hidden>Administrator</div>
     <button data-view="set" id="adm-btn" hidden>Sozlamalar</button>
@@ -855,7 +864,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     if(COSTS){if(cb)cb();return}
     api('GET','/costs',null,function(err,r){
       if(!err&&r.costs){COSTS=r.costs.items||{};costsAt=r.costs.at||''}
-      if(cb)cb(err);drawSums();
+      if(cb)cb(err);drawSums();drawMonthMarja();
     });
   }
   function dishMarja(p,c){var r=p*(1+SRV);return r>0?(r-c)/r:0}
@@ -1010,7 +1019,27 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
   function dmy(d){var p=String(d||'').split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:d}
 
   /* --- bronlar ro'yxati --- */
-  function drawCount(){$('cnt').innerHTML=bron.length||''}
+  function drawCount(){$('cnt').innerHTML=bron.length||'';drawMonthMarja()}
+  /* oy boshidan Jowi'da yozilgan banket menyularining umumiy marjasi — "Taomlar marjasi" bilan bir formula:
+     (narx×1,15 − tannarx)/(narx×1,15); "kelmadi" bronlar va tannarxi yo'q taomlar hisobga kirmaydi */
+  function drawMonthMarja(){
+    var el=$('mjb');if(!el)return;
+    if(!COSTS||!bron.length){el.hidden=true;return}
+    var t=new Date(),ym=iso(t).slice(0,7),rev=0,cost=0,n=0,i,j,b,l,c,has;
+    for(i=0;i<bron.length;i++){b=bron[i];
+      if(String(b.date||'').slice(0,7)!==ym||b.status==='kelmadi'||!b.lines)continue;
+      has=false;
+      for(j=0;j<b.lines.length;j++){l=b.lines[j];c=COSTS[l.id];if(!c)continue;
+        rev+=num(l.p)*num(l.q)*(1+SRV);cost+=c.c*num(l.q);has=true}
+      if(has)n++}
+    var mp=rev?(rev-cost)/rev:0;
+    el.className='mjb'+(rev?' '+mLvl(mp)[0]:'');
+    $('mjb-t').innerHTML=MONTHS[t.getMonth()]+' marjasi';
+    $('mjb-v').innerHTML=rev?(mp*100).toFixed(1).replace('.',',')+'%':'—';
+    el.title=n+' ta banket menyusi (Jowi rejasi), usluga bilan';
+    $('mjb-s').innerHTML=rev?n+' ta banket · Jowi menyusi bo\'yicha':'bu oy menyuli banket yo\'q';
+    el.hidden=false;
+  }
   function iso(d){function p(n){return (n<10?'0':'')+n}return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
   function addDays(d,n){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()+n);return x}
   /* kalendar: mode = day | month | next | all */
