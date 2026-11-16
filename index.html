@@ -929,6 +929,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     var e=check(),i,found=false;if(e)return say(e,true);
     store('gj_service',num(cur.service));
     if(!cur.id)cur.id='b'+(new Date().getTime())+Math.floor(Math.random()*1000);
+    for(i=0;i<bron.length;i++)if(bron[i].id===cur.id&&num(bron[i].prints)>num(cur.prints))cur.prints=bron[i].prints; /* nusxa soni kamaymasin */
     cur.saved=new Date().getTime();
     var copy=JSON.parse(JSON.stringify(cur)),btn=this;
     btn.disabled=true;say('Saqlanmoqda…');
@@ -943,8 +944,21 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
       drawCount();drawManagers();drawSums();say('Bron saqlandi');
     });
   };
+  /* chek ostidagi "Chop etildi: vaqt · login · N-nusxa" (egasi 2026-11-16, C varianti).
+     Nusxa soni faqat saqlangan bronda: serverdagi nusxasiga prints+1 yoziladi (saqlanmagan tahrirlar yuborilmaydi) */
+  var PR=null;
+  function nowTxt(){var d=new Date();function p(n){return (n<10?'0':'')+n}return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())}
+  function prLine(pr){return pr?'Chop etildi: '+pr.at+(pr.who?' · '+pr.who:'')+(pr.n?' · '+pr.n+'-nusxa':''):''}
   $('print').onclick=function(){
     read();if(!cur.lines.length)return say('Kamida bitta taom tanlang',true);
+    var i,saved=null;
+    if(cur.id)for(i=0;i<bron.length;i++)if(bron[i].id===cur.id)saved=bron[i];
+    PR={at:nowTxt(),who:me||'',n:0};
+    if(saved){
+      var copy=JSON.parse(JSON.stringify(saved));
+      copy.prints=(num(saved.prints)||0)+1;PR.n=copy.prints;cur.prints=copy.prints;
+      api('PUT','/bron/'+encodeURIComponent(copy.id),copy,function(err){if(!err)saved.prints=copy.prints});
+    }
     drawSheet();window.print();
   };
   $('backlist').onclick=function(){show('list')};
@@ -952,7 +966,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
 
   /* --- chop etiladigan varaq --- */
   /* termal chek HTML — dizayni Sozlamalar → Chek dizayni (rc) dan; chop etish va sozlamadagi ko'rinish bir xil */
-  function receiptHTML(rc,b){
+  function receiptHTML(rc,b,pr){
     var keep=cur;cur=b;var c=calc();cur=keep;
     var w=rc.paper==='58'?58:80,mg=rc.margin,i,l,last=null,a=sorted(b.lines),h='',sw=rc.show,bw=rc.weight==='700'?700:600;
     function kv(k,v,big){return v===''||v==null?'':'<div style="display:flex;justify-content:space-between;align-items:baseline;'+(big?'font-size:'+rc.totalSize+'pt;font-weight:700;padding:.8mm 0':'padding:.2mm 0')+'"><span>'+k+'</span><b style="font-weight:'+(big?700:bw)+';text-align:right;margin-left:2mm">'+esc(v)+'</b></div>'}
@@ -977,6 +991,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     if(sw.deposit&&c.dep)h+=kv('Oldindan to\'lov',fmt(c.dep))+kv('Qoldiq',fmt(c.rest));
     h+=hr;if(rc.logoPos==='bottom')h+=logo;
     if(rc.footText)h+='<div style="text-align:center;font-size:'+(rc.size-1)+'pt;margin-top:1mm">'+esc(rc.footText)+'</div>';
+    if(pr)h+='<div style="text-align:center;font-size:'+(rc.size-1.5)+'pt;margin-top:1mm">'+esc(prLine(pr))+'</div>';
     return '<div style="box-sizing:border-box;width:'+w+'mm;padding:'+mg+'mm '+mg+'mm '+(mg+3)+'mm;font-family:'+rc.font+';font-size:'+rc.size+'pt;line-height:'+rc.lineGap+';font-weight:'+rc.weight+';color:#000;background:#fff">'+h+'</div>';
   }
   function drawSheet(){
@@ -985,7 +1000,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     if(p==='a4')return drawSheetA4();
     var sh=$('sheet'),rc=SET.rc;
     sh.className='rc';
-    sh.innerHTML=receiptHTML(rc,cur);
+    sh.innerHTML=receiptHTML(rc,cur,PR);
     /* chek bo'yini o'lchab, bitta uzun sahifa qilamiz — aks holda brauzer uni
        printerning standart varaq bo'yida (≈297 mm) bo'lib, ikkiga kesadi */
     sh.style.cssText='display:block;position:absolute;left:-9999px;top:0;padding:0';
@@ -1014,6 +1029,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     if(c.pp)h+='<div><span>Kishi boshiga</span><span>'+fmt(c.pp)+' so\'m</span></div>';
     if(c.dep)h+='<div><span>Oldindan to\'lov</span><span>'+fmt(c.dep)+' so\'m</span></div><div><span>Qoldiq</span><span>'+fmt(c.rest)+' so\'m</span></div>';
     h+='</div>';
+    if(PR)h+='<div style="text-align:right;font-size:8.5pt;color:#555;margin-top:8mm">'+esc(prLine(PR))+'</div>';
     $('sheet').innerHTML=h;
   }
   function dmy(d){var p=String(d||'').split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:d}
@@ -1186,7 +1202,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     if(document.activeElement!==$('r-headText'))$('r-headText').value=rc.headText;
     if(document.activeElement!==$('r-footText'))$('r-footText').value=rc.footText;
     var cb=$('r-show').getElementsByTagName('input');for(i=0;i<cb.length;i++)cb[i].checked=!!rc.show[cb[i].getAttribute('data-s')];
-    $('paper2').innerHTML=receiptHTML(rc,sampleBron());
+    $('paper2').innerHTML=receiptHTML(rc,sampleBron(),{at:nowTxt(),who:me||'Jahongir',n:1});
   }
   (function(){
     var segs=document.querySelectorAll('#s-chek .seg'),i,j,bs,k,h='';
