@@ -931,6 +931,7 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
     if(!cur.id)cur.id='b'+(new Date().getTime())+Math.floor(Math.random()*1000);
     for(i=0;i<bron.length;i++)if(bron[i].id===cur.id&&num(bron[i].prints)>num(cur.prints))cur.prints=bron[i].prints; /* nusxa soni kamaymasin */
     cur.saved=new Date().getTime();
+    if(!cur.created)cur.created=createdOf(cur)||cur.saved; /* bron qilingan vaqt — keyingi tahrirlarda o'zgarmaydi */
     var copy=JSON.parse(JSON.stringify(cur)),btn=this;
     btn.disabled=true;say('Saqlanmoqda…');
     api('PUT','/bron/'+encodeURIComponent(copy.id),copy,function(err,r){
@@ -944,16 +945,24 @@ td .st{display:inline-block;background:var(--pill);border-radius:6px;padding:0 6
       drawCount();drawManagers();drawSums();say('Bron saqlandi');
     });
   };
-  /* chek ostidagi "Chop etildi: vaqt · login · N-nusxa" (egasi 2026-11-16, C varianti).
+  /* chek ostidagi "Bron qilindi: vaqt · login · N-nusxa" (egasi 2026-11-16 C varianti; 2026-11-17: chop vaqti emas, BRON QILINGAN vaqt).
      Nusxa soni faqat saqlangan bronda: serverdagi nusxasiga prints+1 yoziladi (saqlanmagan tahrirlar yuborilmaydi) */
   var PR=null;
-  function nowTxt(){var d=new Date();function p(n){return (n<10?'0':'')+n}return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())}
-  function prLine(pr){return pr?'Chop etildi: '+pr.at+(pr.who?' · '+pr.who:'')+(pr.n?' · '+pr.n+'-nusxa':''):''}
+  function nowTxt(t){var d=t?new Date(t):new Date();function p(n){return (n<10?'0':'')+n}return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())}
+  /* bron yaratilgan vaqt: created maydoni, bo'lmasa id ichidagi vaqt (Jowi "b"+ms, CRM "c"+ms base36) */
+  function createdOf(b){
+    if(!b)return 0;if(num(b.created))return num(b.created);
+    var id=String(b.id||''),x=id.match(/^b(\d{13})/);if(x)return +x[1];
+    x=id.match(/^c([0-9a-z]{8})/);if(x){var t=parseInt(x[1],36);if(t>1.5e12&&t<4e12)return t}
+    return 0;
+  }
+  function prLine(pr){return pr?'Bron qilindi: '+pr.at+(pr.who?' · '+pr.who:'')+(pr.n?' · '+pr.n+'-nusxa':''):''}
   $('print').onclick=function(){
     read();if(!cur.lines.length)return say('Kamida bitta taom tanlang',true);
     var i,saved=null;
     if(cur.id)for(i=0;i<bron.length;i++)if(bron[i].id===cur.id)saved=bron[i];
-    PR={at:nowTxt(),who:me||'',n:0};
+    var ct=createdOf(saved||cur);
+    PR={at:nowTxt(ct||undefined),who:kpiName(saved||cur)||me||'',n:0};
     if(saved){
       var copy=JSON.parse(JSON.stringify(saved));
       copy.prints=(num(saved.prints)||0)+1;PR.n=copy.prints;cur.prints=copy.prints;
